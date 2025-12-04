@@ -9,4 +9,6 @@ interface AnimalService {
     fun getAnimalById(id: Long): AnimalResponseDTO
     fun updateAnimal(id: Long, dto: AnimalDTO): AnimalResponseDTO
     fun deleteAnimal(id: Long)
+    fun countAllAnimals(): Long
+    fun countAnimalsByType(): List<Map<String, Any>>
 }

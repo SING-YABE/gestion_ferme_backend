@@ -1,5 +1,6 @@
 package com.oki.gestion_parc_backend.service
 import com.oki.gestion_parc_backend.dto.ChargeDiversesDto
+import com.oki.gestion_parc_backend.dto.PourcentageTypeChargeDTO
 
 interface ChargeDiversesService {
     fun create(dto: ChargeDiversesDto): ChargeDiversesDto
@@ -7,4 +8,5 @@ interface ChargeDiversesService {
     fun getAll(): List<ChargeDiversesDto>
     fun getById(id: Long): ChargeDiversesDto
     fun delete(id: Long)
+    fun getPourcentageParType(): List<PourcentageTypeChargeDTO>
 }

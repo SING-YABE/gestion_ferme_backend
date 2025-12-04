@@ -124,5 +124,22 @@ class AnimalServiceImpl(
         if (!animalRepository.existsById(id)) throw IllegalArgumentException("Animal avec id $id non trouvé")
         animalRepository.deleteById(id)
     }
+    override fun countAllAnimals(): Long {
+        return animalRepository.count()
+    }
+
+    override fun countAnimalsByType(): List<Map<String, Any>> {
+        val types = typeAnimalRepository.findAll()
+
+        return types.map { type ->
+            mapOf(
+                "id" to type.id,
+                "nom" to type.nom,
+                "prefix" to type.prefix,
+                "total" to animalRepository.countByTypeAnimal(type)
+            )
+        }
+    }
+
 }
 

@@ -24,4 +24,9 @@ class ChargeDiversesController(
 
     @DeleteMapping("/{id}")
     fun delete(@PathVariable id: Long) = service.delete(id)
+
+    @GetMapping("/pourcentage-par-type")
+    fun getPourcentageParType() = service.getPourcentageParType()
 }
+
+

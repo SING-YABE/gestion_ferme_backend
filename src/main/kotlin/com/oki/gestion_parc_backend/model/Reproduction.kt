@@ -17,7 +17,7 @@ data class Reproduction(
 
     @ManyToOne
     @JoinColumn(name = "verrat_id", nullable = false)
-    val verrat: Animal, // référence à l'animal mâle
+    val verrat: Animal, // animal male
 
     @Column(nullable = false)
     val dateMiseBasPrevue: LocalDate,

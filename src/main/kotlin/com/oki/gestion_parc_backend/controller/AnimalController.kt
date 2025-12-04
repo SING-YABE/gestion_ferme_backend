@@ -7,21 +7,31 @@ import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/api/animaux")
-class AnimalController(private val service: AnimalService) {
+class AnimalController(private val animalservice: AnimalService) {
 
     @PostMapping
-    fun creer(@RequestBody dto: AnimalDTO): AnimalResponseDTO = service.creerAnimal(dto)
+    fun creer(@RequestBody dto: AnimalDTO): AnimalResponseDTO = animalservice.creerAnimal(dto)
 
     @GetMapping
-    fun getAll(): List<AnimalResponseDTO> = service.getAllAnimaux()
+    fun getAll(): List<AnimalResponseDTO> = animalservice.getAllAnimaux()
 
     @GetMapping("/{id}")
-    fun getById(@PathVariable id: Long): AnimalResponseDTO = service.getAnimalById(id)
+    fun getById(@PathVariable id: Long): AnimalResponseDTO = animalservice.getAnimalById(id)
 
     @PutMapping("/{id}")
     fun update(@PathVariable id: Long, @RequestBody dto: AnimalDTO): AnimalResponseDTO =
-        service.updateAnimal(id, dto)
+        animalservice.updateAnimal(id, dto)
 
     @DeleteMapping("/{id}")
-    fun delete(@PathVariable id: Long) = service.deleteAnimal(id)
+    fun delete(@PathVariable id: Long) = animalservice.deleteAnimal(id)
+
+    @GetMapping("/count")
+    fun countAllAnimals(): Long {
+        return animalservice.countAllAnimals()
+    }
+
+    @GetMapping("/count-by-type")
+    fun countAnimalsByType(): List<Map<String, Any>> {
+        return animalservice.countAnimalsByType()
+    }
 }

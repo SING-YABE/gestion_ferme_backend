@@ -1,5 +1,6 @@
 package com.oki.gestion_parc_backend.controller
 
+import com.oki.gestion_parc_backend.dto.AlerteMiseBasDTO
 import com.oki.gestion_parc_backend.dto.ReproductionDTO
 import com.oki.gestion_parc_backend.dto.ReproductionResponseDTO
 import com.oki.gestion_parc_backend.service.ReproductionService
@@ -24,4 +25,11 @@ class ReproductionController(private val service: ReproductionService) {
 
     @DeleteMapping("/{id}")
     fun delete(@PathVariable id: Long) = service.deleteReproduction(id)
+
+    @GetMapping("/stats")
+    fun statistiques() = service.getStatistiquesReproduction()
+    @GetMapping("/alertes")
+    fun alertesMiseBas(): List<AlerteMiseBasDTO> = service.getAlertesMiseBas()
+
+
 }

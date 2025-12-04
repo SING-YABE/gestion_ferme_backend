@@ -1,6 +1,7 @@
 package com.oki.gestion_parc_backend.service.impl
 
 import com.oki.gestion_parc_backend.dto.ChargeDiversesDto
+import com.oki.gestion_parc_backend.dto.PourcentageTypeChargeDTO
 import com.oki.gestion_parc_backend.mapper.ChargeDiversesMapper
 import com.oki.gestion_parc_backend.repository.ChargeDiversesRepository
 import com.oki.gestion_parc_backend.repository.TypeDepenseRepository
@@ -41,4 +42,18 @@ class ChargeDiversesServiceImpl(
         ChargeDiversesMapper.toDto(repo.findById(id).orElseThrow())
 
     override fun delete(id: Long) = repo.deleteById(id)
+
+    override fun getPourcentageParType(): List<PourcentageTypeChargeDTO> {
+        val totalCharges = repo.sumTotalCharges()
+        val montantParType = repo.sumMontantByType()
+
+        return montantParType.map { record ->
+            val type = record[0] as String
+            val montant = (record[1] as Number).toDouble()
+            val pourcentage = if (totalCharges > 0) (montant / totalCharges) * 100 else 0.0
+            PourcentageTypeChargeDTO(type, montant, pourcentage)
+        }
+    }
+
 }
+

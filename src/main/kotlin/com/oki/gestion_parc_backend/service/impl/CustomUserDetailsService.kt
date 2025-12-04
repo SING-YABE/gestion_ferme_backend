@@ -31,6 +31,7 @@ class CustomUserDetailsService(
             utilisateur.password,
             authorities
         )
+
     }
 
     @PostConstruct

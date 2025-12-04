@@ -7,9 +7,6 @@ import org.springframework.stereotype.Repository
 import java.util.*
 
 @Repository
-//interface AnimalRepository : JpaRepository<Animal, Long> {
-//    fun countByTypeAnimal(typeAnimal: TypeAnimal): Long
-//}
 
 
 interface AnimalRepository : JpaRepository<Animal, Long> {
