@@ -29,5 +29,20 @@ data class Animal(
     @JoinColumn(name = "batiment_id", nullable = false)
     val batiment: Batiment,
 
-    val observations: String? = null
+    val observations: String? = null,
+
+    @ManyToOne
+    @JoinColumn(name = "reproduction_id")
+    val reproduction: Reproduction? = null
 )
+
+
+
+
+
+
+
+
+
+
+

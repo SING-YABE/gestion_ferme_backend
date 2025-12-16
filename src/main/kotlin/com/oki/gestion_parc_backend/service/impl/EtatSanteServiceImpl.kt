@@ -3,17 +3,30 @@ package com.oki.gestion_parc_backend.service.impl
 import com.oki.gestion_parc_backend.dto.EtatSanteDTO
 import com.oki.gestion_parc_backend.dto.EtatSanteMapper
 import com.oki.gestion_parc_backend.dto.EtatSanteResponseDTO
+import com.oki.gestion_parc_backend.model.EtatSante
 import com.oki.gestion_parc_backend.repository.EtatSanteRepository
+import com.oki.gestion_parc_backend.repository.TypeAnimalRepository
 import com.oki.gestion_parc_backend.service.EtatSanteService
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
 @Service
-class EtatSanteServiceImpl(private val repository: EtatSanteRepository) : EtatSanteService {
+class EtatSanteServiceImpl(
+    private val repository: EtatSanteRepository,
+    private val typeAnimalRepository: TypeAnimalRepository
+) : EtatSanteService {
+
 
     @Transactional
     override fun creerEtat(dto: EtatSanteDTO): EtatSanteResponseDTO {
-        val saved = repository.save(EtatSanteMapper.toEntity(dto))
+        val typeAnimal = typeAnimalRepository.findById(dto.typeAnimalId)
+            .orElseThrow { IllegalArgumentException("TypeAnimal non trouvé") }
+
+        val entity = EtatSante(
+            description = dto.description,
+            typeAnimal = typeAnimal  // ← AJOUT
+        )
+        val saved = repository.save(entity)
         return EtatSanteMapper.toResponseDTO(saved)
     }
 
@@ -38,4 +51,8 @@ class EtatSanteServiceImpl(private val repository: EtatSanteRepository) : EtatSa
         if (!repository.existsById(id)) throw IllegalArgumentException("EtatSante avec id $id non trouvé")
         repository.deleteById(id)
     }
+
+    override fun getEtatsByTypeAnimal(typeAnimalId: Long): List<EtatSanteResponseDTO> =
+        repository.findByTypeAnimalId(typeAnimalId)
+            .map { EtatSanteMapper.toResponseDTO(it) }
 }

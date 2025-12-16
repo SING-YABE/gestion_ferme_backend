@@ -1,11 +1,11 @@
 package com.oki.gestion_parc_backend.model
+
 import jakarta.persistence.*
-import java.time.LocalDate
 
 @Entity
-data class Traitement(
+data class TypeVente(
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0,
-    val description: String,
-    val nom :String
+
+    val nom: String,
 )

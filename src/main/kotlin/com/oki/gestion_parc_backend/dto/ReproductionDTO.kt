@@ -15,8 +15,8 @@ data class ReproductionDTO(
     @field:NotBlank
     val dateSaillie: String, // format JJ/MM/AAAA
 
-    @field:NotBlank
-    val dateMiseBasPrevue: String, // format JJ/MM/AAAA
+//    @field:NotBlank
+//    val dateMiseBasPrevue: String, // format JJ/MM/AAAA
 
     val dateMiseBasReelle: String? = null,
 
@@ -31,3 +31,10 @@ data class ReproductionDTO(
 
     val observations: String? = null
 )
+
+
+
+
+
+
+

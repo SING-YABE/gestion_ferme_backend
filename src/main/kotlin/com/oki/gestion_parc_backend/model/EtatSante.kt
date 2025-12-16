@@ -7,5 +7,9 @@ data class EtatSante(
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0,
 
-    val description: String
+    val description: String,
+
+    @ManyToOne
+    @JoinColumn(name = "type_animal_id", nullable = false)
+    val typeAnimal: TypeAnimal
 )

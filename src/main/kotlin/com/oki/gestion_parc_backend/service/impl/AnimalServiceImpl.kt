@@ -25,30 +25,7 @@ class AnimalServiceImpl(
     private val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
 
     @Transactional
-//    override fun creerAnimal(dto: AnimalDTO): AnimalResponseDTO {
-//        val typeAnimal = typeAnimalRepository.findById(dto.typeAnimalId)
-//            .orElseThrow { IllegalArgumentException("TypeAnimal avec id ${dto.typeAnimalId} non trouvé") }
-//
-//        val batiment = batimentRepository.findById(dto.batimentId)
-//            .orElseThrow { IllegalArgumentException("Batiment avec id ${dto.batimentId} non trouvé") }
-//
-//        val etatSante = etatSanteRepository.findById(dto.etatSanteId)
-//            .orElseThrow { IllegalArgumentException("EtatSante avec id ${dto.etatSanteId} non trouvé") }
-//
-//        val dateEntree = LocalDate.parse(dto.dateEntree, formatter)
-//
-//        val animal = Animal(
-//            typeAnimal = typeAnimal,
-//            batiment = batiment,
-//            etatSante = etatSante,
-//            dateEntree = dateEntree,
-//            poidsInitial = dto.poidsInitial,
-//            observations = dto.observations
-//        )
-//
-//        val saved = animalRepository.save(animal)
-//        return AnimalMapper.toResponseDTO(saved)
-//    }
+
     override fun creerAnimal(dto: AnimalDTO): AnimalResponseDTO {
 
         val typeAnimal = typeAnimalRepository.findById(dto.typeAnimalId)

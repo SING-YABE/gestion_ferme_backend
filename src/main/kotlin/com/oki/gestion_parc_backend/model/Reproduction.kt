@@ -28,5 +28,22 @@ data class Reproduction(
     val nbMortsNes: Int? = null,
     val nbSevres: Int? = null,
 
-    val observations: String? = null
+    val observations: String? = null,
+
+    // liste porcelet crees
+
+    @OneToMany(mappedBy = "reproduction", cascade = [CascadeType.ALL], orphanRemoval = true)
+    val porcelets: MutableList<Animal> = mutableListOf()
 )
+
+
+
+
+
+
+
+
+
+
+
+

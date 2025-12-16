@@ -9,12 +9,12 @@ data class Alimentation(
     val id: Long = 0,
 
     val date: LocalDate = LocalDate.now(),
-    @ManyToOne(optional = false)
-    val typeAliment: TypeAliment,
 
-    val quantiteKg: Double = 0.0,
+    @Column(nullable = false)
+    val mode: String, // "ACHAT" ou "FABRICATION"
 
-    val prixUnitaire: Double = 0.0,
+    @OneToMany(mappedBy = "alimentation", cascade = [CascadeType.ALL], orphanRemoval = true)
+    var ingredients: MutableList<IngredientAlimentation> = mutableListOf(),
 
     // alimentation ciblée pour 1 animal
     @ManyToOne(optional = true)
@@ -28,5 +28,5 @@ data class Alimentation(
     val fournisseur: Fournisseur? = null
 ) {
     val coutTotal: Double
-        get() = quantiteKg * prixUnitaire
+        get() = ingredients.sumOf { it.sousTotal }
 }

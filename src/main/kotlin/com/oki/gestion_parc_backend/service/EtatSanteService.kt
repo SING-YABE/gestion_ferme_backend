@@ -9,4 +9,5 @@ interface EtatSanteService {
     fun getEtatById(id: Long): EtatSanteResponseDTO
     fun updateEtat(id: Long, dto: EtatSanteDTO): EtatSanteResponseDTO
     fun deleteEtat(id: Long)
+    fun getEtatsByTypeAnimal(typeAnimalId: Long): List<EtatSanteResponseDTO>
 }

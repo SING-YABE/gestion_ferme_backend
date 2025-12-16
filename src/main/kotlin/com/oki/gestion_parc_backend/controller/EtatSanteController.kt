@@ -24,4 +24,9 @@ class EtatSanteController(private val service: EtatSanteService) {
 
     @DeleteMapping("/{id}")
     fun delete(@PathVariable id: Long) = service.deleteEtat(id)
+
+    @GetMapping("/by-type/{typeAnimalId}")
+    fun getByType(@PathVariable typeAnimalId: Long): List<EtatSanteResponseDTO> {
+        return service.getEtatsByTypeAnimal(typeAnimalId)
+    }
 }

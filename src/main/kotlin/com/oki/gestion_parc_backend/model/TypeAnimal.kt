@@ -8,10 +8,12 @@ data class TypeAnimal(
     val id: Long = 0,
 
     val nom: String,
-    @Column(nullable = false, length = 5)
-    val prefix: String
-)
 
+    @Column(nullable = false, length = 5)
+    val prefix: String,
+
+    val description: String? = null
+)
 
 
 
