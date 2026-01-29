@@ -34,4 +34,7 @@ class AnimalController(private val animalservice: AnimalService) {
     fun countAnimalsByType(): List<Map<String, Any>> {
         return animalservice.countAnimalsByType()
     }
+
+
+
 }

@@ -3,31 +3,38 @@ package com.oki.gestion_parc_backend.model
 
 import jakarta.persistence.*
 import java.time.LocalDate
-
 @Entity
-data class Vente(
+class Vente(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long = 0,
+    var id: Long = 0,
 
     @Column(nullable = false)
-    val dateVente: LocalDate,
+    var dateVente: LocalDate,
+
+    @Column(nullable = true)
+    var dateEnlevement: LocalDate?,
+
+
+    @Column(nullable = true)
+    var dateEnlevementAuPlusTard: LocalDate?,
 
     @Column(nullable = false)
-    val type: String,
+    var client: String,
 
     @Column(nullable = false)
-    val quantite: Double,
+    var poidsTotal: Double = 0.0,
 
     @Column(nullable = false)
-    val poidsTotal: Double,
+    var montantTotal: Double = 0.0,
 
-    @Column(nullable = false)
-    val prixUnitaire: Double,
-
-    @Column(nullable = false)
-    val montantTotal: Double,
-
-    @Column(nullable = false)
-    val client: String
+    @OneToMany(mappedBy = "vente", cascade = [CascadeType.ALL], orphanRemoval = true)
+    var animaux: MutableList<VenteAnimal> = mutableListOf()
 )
+
+
+
+
+
+
+

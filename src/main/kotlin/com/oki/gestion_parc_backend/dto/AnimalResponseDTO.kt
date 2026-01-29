@@ -8,6 +8,8 @@ data class AnimalResponseDTO(
     val poidsInitial: Double,
     val etatSante: EtatSanteResponseDTO,
     val batiment: BatimentResponseDTO,
-    val observations: String?
+    val observations: String?,
+    val vendu: Boolean
+
 )
 

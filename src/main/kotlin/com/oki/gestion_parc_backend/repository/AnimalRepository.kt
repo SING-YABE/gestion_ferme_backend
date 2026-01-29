@@ -16,6 +16,9 @@ interface AnimalRepository : JpaRepository<Animal, Long> {
     fun findByCodeAnimal(code: String): Optional<Animal>
 
     fun countByReproduction(reproduction: Reproduction): Long
+
+    fun findByVenduFalse(): List<Animal>
+
 }
 
 

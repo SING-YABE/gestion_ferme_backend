@@ -12,7 +12,10 @@ object ChargeDiversesMapper {
     fun toEntity(dto: ChargeDiversesDto, typeDepense: TypeDepense): ChargeDiverses {
         return ChargeDiverses(
             id = dto.id ?: 0,
-            date = LocalDate.parse(dto.date),
+            date = java.time.Instant.parse(dto.date)
+                .atZone(java.time.ZoneId.systemDefault())
+                .toLocalDate(),
+
             typeDepense = typeDepense,
             description = dto.description,
             montant = dto.montant,

@@ -33,8 +33,19 @@ data class Animal(
 
     @ManyToOne
     @JoinColumn(name = "reproduction_id")
-    val reproduction: Reproduction? = null
+    val reproduction: Reproduction? = null,
+
+    @Column(nullable = false)
+    val vendu : Boolean = false
+
+
+
+
+
+
+
 )
+
 
 
 

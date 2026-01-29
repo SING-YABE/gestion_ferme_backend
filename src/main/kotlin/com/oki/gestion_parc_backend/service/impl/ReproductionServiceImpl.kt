@@ -263,22 +263,27 @@ class ReproductionServiceImpl(
      */
     @Transactional
     fun creerPorceletsDeReproduction(reproduction: Reproduction, nombre: Int) {
+
+        val reproId = reproduction.id
+            ?: throw IllegalStateException("Reproduction non persistée")
+
         val typePorcelet = typeAnimalRepository.findAll()
             .firstOrNull { it.nom.equals("Porcelet", ignoreCase = true) }
-            ?: throw IllegalArgumentException("Type 'Porcelet' non trouvé dans la base")
+            ?: throw IllegalArgumentException("Type 'Porcelet' non trouvé")
 
         val etatSanteDefaut = etatSanteRepository.findById(1L)
-            .orElseThrow { IllegalArgumentException("État de santé par défaut (id=1) non trouvé") }
+            .orElseThrow { IllegalArgumentException("État de santé par défaut non trouvé") }
 
         val batimentDefaut = reproduction.truie.batiment
+        val dateMiseBas = reproduction.dateMiseBasReelle ?: LocalDate.now()
 
         val codeTruie = reproduction.truie.codeAnimal
         val codeVerrat = reproduction.verrat.codeAnimal
-        val dateMiseBas = reproduction.dateMiseBasReelle ?: LocalDate.now()
 
         for (i in 1..nombre) {
-            val numeroSequentiel = String.format("%03d", i)
-            val codePorcelet = "P_${codeTruie}_${codeVerrat}_$numeroSequentiel"
+
+            val numero = String.format("%03d", i)
+            val codePorcelet = "P_R${reproId}_${codeTruie}_${codeVerrat}_$numero"
 
             val porcelet = Animal(
                 codeAnimal = codePorcelet,
@@ -287,7 +292,7 @@ class ReproductionServiceImpl(
                 poidsInitial = 1.5,
                 etatSante = etatSanteDefaut,
                 batiment = batimentDefaut,
-                observations = "Né le ${dateMiseBas.format(formatter)} de ${codeTruie} × ${codeVerrat}",
+                observations = "Né le ${dateMiseBas.format(formatter)} de $codeTruie × $codeVerrat",
                 reproduction = reproduction
             )
 
@@ -301,7 +306,7 @@ class ReproductionServiceImpl(
     override fun getReproductionById(id: Long): ReproductionResponseDTO =
         reproductionRepository.findById(id)
             .map { ReproductionMapper.toResponseDTO(it) }
-            .orElseThrow { IllegalArgumentException("Reproduction avec id $id non trouvée") }
+            .orElseThrow { IllegalArgumentException("reproduction $id non trouvée") }
 
     @Transactional
     override fun deleteReproduction(id: Long) {

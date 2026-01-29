@@ -1,15 +1,14 @@
 package com.oki.gestion_parc_backend.service
 
-import com.oki.gestion_parc_backend.dto.VenteDTO
-import com.oki.gestion_parc_backend.dto.VenteResponseDTO
+import com.oki.gestion_parc_backend.dto.VenteCreateDTO
+import com.oki.gestion_parc_backend.dto.VenteDetailResponseDTO
 import com.oki.gestion_parc_backend.dto.VentesEvolutionDTO
+import com.oki.gestion_parc_backend.model.Vente
 
 interface VenteService {
-    fun create(dto: VenteDTO): VenteResponseDTO
-    fun update(id: Long, dto: VenteDTO): VenteResponseDTO
-    fun getAll(): List<VenteResponseDTO>
-    fun getById(id: Long): VenteResponseDTO
-    fun delete(id: Long)
-    fun evolutionMensuelle(): List<VentesEvolutionDTO>
-
+    fun creerVente(dto: VenteCreateDTO): VenteDetailResponseDTO
+    fun getAllVentes(): List<VenteDetailResponseDTO>
+    fun getVenteById(id: Long): VenteDetailResponseDTO
+    fun deleteVente(id: Long)
+    fun getVenteEntityById(id: Long): Vente
 }

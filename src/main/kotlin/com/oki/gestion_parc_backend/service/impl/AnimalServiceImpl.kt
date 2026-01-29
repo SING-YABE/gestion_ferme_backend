@@ -63,7 +63,7 @@ class AnimalServiceImpl(
     }
 
     override fun getAllAnimaux(): List<AnimalResponseDTO> =
-        animalRepository.findAll().map { AnimalMapper.toResponseDTO(it) }
+        animalRepository.findByVenduFalse().map { AnimalMapper.toResponseDTO(it) }
 
     override fun getAnimalById(id: Long): AnimalResponseDTO =
         animalRepository.findById(id).map { AnimalMapper.toResponseDTO(it) }
@@ -76,7 +76,7 @@ class AnimalServiceImpl(
         }
 
         val typeAnimal = typeAnimalRepository.findById(dto.typeAnimalId)
-            .orElseThrow { IllegalArgumentException("TypeAnimal avec id ${dto.typeAnimalId} non trouvé") }
+            .orElseThrow { IllegalArgumentException("Type animal ${dto.typeAnimalId} non trouvé") }
 
         val batiment = batimentRepository.findById(dto.batimentId)
             .orElseThrow { IllegalArgumentException("Batiment avec id ${dto.batimentId} non trouvé") }

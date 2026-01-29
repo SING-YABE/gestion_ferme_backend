@@ -9,3 +9,4 @@ data class UtilisateurDTO(
     val password: String,
     val roleId: Long? = null
 )
+

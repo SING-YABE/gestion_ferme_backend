@@ -7,16 +7,19 @@ import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
 import java.time.LocalDate
 
-@Repository
-interface VenteRepository : JpaRepository<Vente, Long>{
 
-    @Query("select coalesce(sum(v.quantite * v.prixUnitaire), 0) from Vente v")
+@Repository
+interface VenteRepository : JpaRepository<Vente, Long> {
+
+    // ✅ Nouvelle requête : somme directe du montantTotal
+    @Query("SELECT COALESCE(SUM(v.montantTotal), 0) FROM Vente v")
     fun sumTotalVentes(): Double
 
-    @Query("select coalesce(sum(v.quantite * v.prixUnitaire), 0) from Vente v where v.dateVente between :start and :end")
+    // ✅ Nouvelle requête : somme entre deux dates
+    @Query("SELECT COALESCE(SUM(v.montantTotal), 0) FROM Vente v WHERE v.dateVente BETWEEN :start AND :end")
     fun sumTotalVentesBetween(@Param("start") start: LocalDate, @Param("end") end: LocalDate): Double
 
-
+    // ✅ Évolution mensuelle basée sur montantTotal
     @Query("""
         SELECT YEAR(v.dateVente) AS annee,
                MONTH(v.dateVente) AS mois,
@@ -26,7 +29,10 @@ interface VenteRepository : JpaRepository<Vente, Long>{
         ORDER BY YEAR(v.dateVente), MONTH(v.dateVente)
     """)
     fun evolutionMensuelle(): List<Array<Any>>
+
+
+    fun findByDateEnlevementBetween(
+        startDate: LocalDate,
+        endDate: LocalDate
+    ): List<Vente>
 }
-
-
-

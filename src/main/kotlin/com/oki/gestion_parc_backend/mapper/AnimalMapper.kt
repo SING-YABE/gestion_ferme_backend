@@ -14,7 +14,8 @@ object AnimalMapper {
         poidsInitial = animal.poidsInitial,
         etatSante = EtatSanteMapper.toResponseDTO(animal.etatSante),
         batiment = BatimentMapper.toResponseDTO(animal.batiment),
-        observations = animal.observations
+        observations = animal.observations,
+        vendu = animal.vendu
     )
 }
 
