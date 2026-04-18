@@ -48,11 +48,6 @@ dependencies {
     implementation("com.itextpdf:itext7-core:7.2.5")
 }
 
-kotlin {
-    compilerOptions {
-        freeCompilerArgs.addAll("-Xjsr305=strict")
-    }
-}
 
 springBoot {
     mainClass.set("com.oki.gestion_parc_backend.GestionParcBackendApplicationKt")

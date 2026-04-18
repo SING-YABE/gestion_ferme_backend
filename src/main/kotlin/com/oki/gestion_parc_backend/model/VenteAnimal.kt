@@ -19,11 +19,16 @@ data class VenteAnimal(
     @JoinColumn(name = "type_vente_id", nullable = false)
     val typeVente: TypeVente,
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    val poidsVente: Double,
+    val modeVente: ModeVente,
 
-    @Column(nullable = false)
-    val prixUnitaire: Double,
+    // Rempli uniquement si AU_POIDS
+    val poidsVente: Double? = null,
+    val prixUnitaire: Double? = null,
+
+    // Rempli uniquement si SANS_PESEE
+    val prixNegocie: Double? = null,
 
     @Column(nullable = false)
     val montantTotal: Double

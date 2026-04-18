@@ -8,7 +8,7 @@ data class AnimalDTO(
     val typeAnimalId: Long,
 
     @field:NotNull
-    val dateEntree: String, // format JJ/MM/AAAA
+    val dateEntree: String, //JJ/MM/AAAA
 
     @field:Positive
     val poidsInitial: Double,
@@ -17,10 +17,11 @@ data class AnimalDTO(
     val etatSanteId: Long,
 
     @field:NotNull
-    val batimentId: Long,
+    val boxId: Long,
 
     val observations: String? = null
 )
+
 
 
 

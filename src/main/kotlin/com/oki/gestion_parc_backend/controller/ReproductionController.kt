@@ -31,5 +31,12 @@ class ReproductionController(private val service: ReproductionService) {
     @GetMapping("/alertes")
     fun alertesMiseBas(): List<AlerteMiseBasDTO> = service.getAlertesMiseBas()
 
+    @GetMapping("/verrat/{code}/performances")
+    fun performancesVerrat(@PathVariable code: String) =
+        service.getPerformancesVerrat(code)
+
+    @GetMapping("/truie/{code}/carriere")
+    fun carriereTruie(@PathVariable code: String) =
+        service.getCarriereTruie(code)
 
 }

@@ -26,8 +26,8 @@ data class Animal(
     val etatSante: EtatSante,
 
     @ManyToOne
-    @JoinColumn(name = "batiment_id", nullable = false)
-    val batiment: Batiment,
+    @JoinColumn(name = "box_id", nullable = false)
+    val box: Box,
 
     val observations: String? = null,
 
@@ -36,24 +36,8 @@ data class Animal(
     val reproduction: Reproduction? = null,
 
     @Column(nullable = false)
-    val vendu : Boolean = false
+    val vendu : Boolean = false,
 
-
-
-
-
-
-
+    @Column
+    val photoUrl: String? = null
 )
-
-
-
-
-
-
-
-
-
-
-
-

@@ -27,8 +27,10 @@ object VenteDetailsMapper {
             id = venteAnimal.id,
             animalCode = venteAnimal.animal.codeAnimal,
             typeVenteNom = venteAnimal.typeVente.nom,
+            modeVente = venteAnimal.modeVente,
             poidsVente = venteAnimal.poidsVente,
             prixUnitaire = venteAnimal.prixUnitaire,
+            prixNegocie = venteAnimal.prixNegocie,
             montantTotal = venteAnimal.montantTotal
         )
     }

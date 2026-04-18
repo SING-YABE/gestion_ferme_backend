@@ -26,4 +26,12 @@ interface ReproductionRepository : JpaRepository<Reproduction, Long> {
 
     // 4️Total mises bas réelles
     fun countByDateMiseBasReelleIsNotNull(): Long
+
+
+    // reprod verrat
+    fun findByVerratCodeAnimalOrderByDateSaillieAsc(code: String): List<Reproduction>
+
+    // reprod d'une truie
+    fun findByTruieCodeAnimalOrderByDateSaillieAsc(code: String): List<Reproduction>
+
 }

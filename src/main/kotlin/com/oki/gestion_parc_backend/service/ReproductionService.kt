@@ -4,6 +4,8 @@ import com.oki.gestion_parc_backend.dto.AlerteMiseBasDTO
 import com.oki.gestion_parc_backend.dto.ReproductionDTO
 import com.oki.gestion_parc_backend.dto.ReproductionResponseDTO
 import com.oki.gestion_parc_backend.dto.ReproductionStatsDTO
+import com.oki.gestion_parc_backend.dto.TruieCarriereDTO
+import com.oki.gestion_parc_backend.dto.VerratPerformanceDTO
 
 interface ReproductionService {
     fun creerReproduction(dto: ReproductionDTO): ReproductionResponseDTO
@@ -13,5 +15,8 @@ interface ReproductionService {
     fun deleteReproduction(id: Long)
     fun getStatistiquesReproduction(): ReproductionStatsDTO
     fun getAlertesMiseBas(): List<AlerteMiseBasDTO>
+
+    fun getPerformancesVerrat(verratCode: String): List<VerratPerformanceDTO>
+    fun getCarriereTruie(truieCode: String): List<TruieCarriereDTO>
 
 }

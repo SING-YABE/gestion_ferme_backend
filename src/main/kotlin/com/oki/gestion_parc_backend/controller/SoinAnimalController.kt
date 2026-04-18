@@ -32,3 +32,8 @@ class SoinAnimalController(private val service: SoinAnimalService) {
         ResponseEntity.ok(service.getByAnimal(code))
 }
 
+
+
+
+
+

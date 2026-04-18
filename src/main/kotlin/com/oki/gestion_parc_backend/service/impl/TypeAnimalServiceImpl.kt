@@ -20,6 +20,8 @@ class TypeAnimalServiceImpl(
         return TypeAnimalMapper.toResponseDTO(saved)
     }
 
+
+
     override fun getAllTypes(): List<TypeAnimalResponseDTO> =
         repository.findAll().map { TypeAnimalMapper.toResponseDTO(it) }
 

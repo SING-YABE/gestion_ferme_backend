@@ -5,7 +5,7 @@ import com.oki.gestion_parc_backend.dto.AnimalMapper
 import com.oki.gestion_parc_backend.dto.AnimalResponseDTO
 import com.oki.gestion_parc_backend.model.Animal
 import com.oki.gestion_parc_backend.repository.AnimalRepository
-import com.oki.gestion_parc_backend.repository.BatimentRepository
+import com.oki.gestion_parc_backend.repository.BoxRepository
 import com.oki.gestion_parc_backend.repository.EtatSanteRepository
 import com.oki.gestion_parc_backend.repository.TypeAnimalRepository
 import com.oki.gestion_parc_backend.service.AnimalService
@@ -14,52 +14,52 @@ import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
+
 @Service
 class AnimalServiceImpl(
     private val animalRepository: AnimalRepository,
     private val typeAnimalRepository: TypeAnimalRepository,
-    private val batimentRepository: BatimentRepository,
+    private val boxRepository: BoxRepository,
     private val etatSanteRepository: EtatSanteRepository
 ) : AnimalService {
 
     private val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
 
     @Transactional
-
     override fun creerAnimal(dto: AnimalDTO): AnimalResponseDTO {
 
         val typeAnimal = typeAnimalRepository.findById(dto.typeAnimalId)
             .orElseThrow { IllegalArgumentException("TypeAnimal avec id ${dto.typeAnimalId} non trouvé") }
 
-        val batiment = batimentRepository.findById(dto.batimentId)
-            .orElseThrow { IllegalArgumentException("Batiment avec id ${dto.batimentId} non trouvé") }
+        val box = boxRepository.findById(dto.boxId)
+            .orElseThrow { IllegalArgumentException("Box avec id ${dto.boxId} non trouvée") }
+
+        // Vérifier capacité box à la création aussi
+        val occupation = animalRepository.countByBoxAndVenduFalse(box)
+        if (occupation >= box.capaciteMax) {
+            throw IllegalStateException(
+                "La box ${box.code} est pleine (${occupation}/${box.capaciteMax})"
+            )
+        }
 
         val etatSante = etatSanteRepository.findById(dto.etatSanteId)
             .orElseThrow { IllegalArgumentException("EtatSante avec id ${dto.etatSanteId} non trouvé") }
 
-        // 1️ RÉCUPÉRER LE PRÉFIXE
         val prefix = typeAnimal.prefix.uppercase()
-
-        // COMPTER COMBIEN D’ANIMAUX EXISTENT DÉJÀ POUR CE TYPE
         val count = animalRepository.countByTypeAnimal(typeAnimal)
-
-        // 3️GÉNÉRER LE CODE
         val codeAnimal = "$prefix${count + 1}"
-
-        val dateEntree = LocalDate.parse(dto.dateEntree, formatter)
 
         val animal = Animal(
             codeAnimal = codeAnimal,
             typeAnimal = typeAnimal,
-            dateEntree = dateEntree,
+            dateEntree = LocalDate.parse(dto.dateEntree, formatter),
             poidsInitial = dto.poidsInitial,
             etatSante = etatSante,
-            batiment = batiment,
+            box = box,
             observations = dto.observations
         )
 
-        val saved = animalRepository.save(animal)
-        return AnimalMapper.toResponseDTO(saved)
+        return AnimalMapper.toResponseDTO(animalRepository.save(animal))
     }
 
     override fun getAllAnimaux(): List<AnimalResponseDTO> =
@@ -71,22 +71,21 @@ class AnimalServiceImpl(
 
     @Transactional
     override fun updateAnimal(id: Long, dto: AnimalDTO): AnimalResponseDTO {
-        val animal = animalRepository.findById(id).orElseThrow {
-            IllegalArgumentException("Animal avec id $id non trouvé")
-        }
+        val animal = animalRepository.findById(id)
+            .orElseThrow { IllegalArgumentException("Animal avec id $id non trouvé") }
 
         val typeAnimal = typeAnimalRepository.findById(dto.typeAnimalId)
-            .orElseThrow { IllegalArgumentException("Type animal ${dto.typeAnimalId} non trouvé") }
+            .orElseThrow { IllegalArgumentException("TypeAnimal ${dto.typeAnimalId} non trouvé") }
 
-        val batiment = batimentRepository.findById(dto.batimentId)
-            .orElseThrow { IllegalArgumentException("Batiment avec id ${dto.batimentId} non trouvé") }
+        val box = boxRepository.findById(dto.boxId)
+            .orElseThrow { IllegalArgumentException("Box avec id ${dto.boxId} non trouvée") }
 
         val etatSante = etatSanteRepository.findById(dto.etatSanteId)
             .orElseThrow { IllegalArgumentException("EtatSante avec id ${dto.etatSanteId} non trouvé") }
 
         val updated = animal.copy(
             typeAnimal = typeAnimal,
-            batiment = batiment,
+            box = box,
             etatSante = etatSante,
             dateEntree = LocalDate.parse(dto.dateEntree, formatter),
             poidsInitial = dto.poidsInitial,
@@ -101,14 +100,11 @@ class AnimalServiceImpl(
         if (!animalRepository.existsById(id)) throw IllegalArgumentException("Animal avec id $id non trouvé")
         animalRepository.deleteById(id)
     }
-    override fun countAllAnimals(): Long {
-        return animalRepository.count()
-    }
+
+    override fun countAllAnimals(): Long = animalRepository.count()
 
     override fun countAnimalsByType(): List<Map<String, Any>> {
-        val types = typeAnimalRepository.findAll()
-
-        return types.map { type ->
+        return typeAnimalRepository.findAll().map { type ->
             mapOf(
                 "id" to type.id,
                 "nom" to type.nom,
@@ -117,6 +113,5 @@ class AnimalServiceImpl(
             )
         }
     }
-
 }
 

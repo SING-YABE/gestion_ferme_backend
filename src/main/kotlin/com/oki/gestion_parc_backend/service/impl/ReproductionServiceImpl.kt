@@ -153,6 +153,8 @@ import com.oki.gestion_parc_backend.dto.ReproductionDTO
 import com.oki.gestion_parc_backend.dto.ReproductionMapper
 import com.oki.gestion_parc_backend.dto.ReproductionResponseDTO
 import com.oki.gestion_parc_backend.dto.ReproductionStatsDTO
+import com.oki.gestion_parc_backend.dto.TruieCarriereDTO
+import com.oki.gestion_parc_backend.dto.VerratPerformanceDTO
 import com.oki.gestion_parc_backend.model.Animal
 import com.oki.gestion_parc_backend.model.Reproduction
 import com.oki.gestion_parc_backend.repository.AnimalRepository
@@ -172,7 +174,6 @@ class ReproductionServiceImpl(
     private val animalRepository: AnimalRepository,
     private val typeAnimalRepository: TypeAnimalRepository,
     private val etatSanteRepository: EtatSanteRepository,
-    private val batimentRepository: BatimentRepository
 ) : ReproductionService {
 
     private val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
@@ -198,6 +199,7 @@ class ReproductionServiceImpl(
 
         val dateSaillie = LocalDate.parse(dto.dateSaillie, formatter)
         val dateMiseBasPrevue = calculerDateMiseBasPrevue(dateSaillie)
+
 
         val reproduction = Reproduction(
             truie = truie,
@@ -274,7 +276,8 @@ class ReproductionServiceImpl(
         val etatSanteDefaut = etatSanteRepository.findById(1L)
             .orElseThrow { IllegalArgumentException("État de santé par défaut non trouvé") }
 
-        val batimentDefaut = reproduction.truie.batiment
+        val boxDefaut = reproduction.truie.box
+
         val dateMiseBas = reproduction.dateMiseBasReelle ?: LocalDate.now()
 
         val codeTruie = reproduction.truie.codeAnimal
@@ -285,17 +288,19 @@ class ReproductionServiceImpl(
             val numero = String.format("%03d", i)
             val codePorcelet = "P_R${reproId}_${codeTruie}_${codeVerrat}_$numero"
 
+            // APRÈS
+            val boxDefaut = reproduction.truie.box
+
             val porcelet = Animal(
                 codeAnimal = codePorcelet,
                 typeAnimal = typePorcelet,
                 dateEntree = dateMiseBas,
                 poidsInitial = 1.5,
                 etatSante = etatSanteDefaut,
-                batiment = batimentDefaut,
+                box = boxDefaut,
                 observations = "Né le ${dateMiseBas.format(formatter)} de $codeTruie × $codeVerrat",
                 reproduction = reproduction
             )
-
             animalRepository.save(porcelet)
         }
     }
@@ -354,6 +359,40 @@ class ReproductionServiceImpl(
                     truieCode = repro.truie.codeAnimal,
                     dateMiseBasPrevue = repro.dateMiseBasPrevue.format(formatter),
                     joursRestants = joursRestants
+                )
+            }
+    }
+
+
+
+
+    override fun getPerformancesVerrat(verratCode: String): List<VerratPerformanceDTO> {
+        return reproductionRepository
+            .findByVerratCodeAnimalOrderByDateSaillieAsc(verratCode)
+            .map { repro ->
+                VerratPerformanceDTO(
+                    truieCode = repro.truie.codeAnimal,
+                    dateSaillie = repro.dateSaillie.format(formatter),
+                    dateMiseBasReelle = repro.dateMiseBasReelle?.format(formatter),
+                    nbNesVivants = repro.nbNesVivants,
+                    nbMortsNes = repro.nbMortsNes,
+                    nbSevres = repro.nbSevres
+                )
+            }
+    }
+
+    override fun getCarriereTruie(truieCode: String): List<TruieCarriereDTO> {
+        return reproductionRepository
+            .findByTruieCodeAnimalOrderByDateSaillieAsc(truieCode)
+            .mapIndexed { index, repro ->
+                TruieCarriereDTO(
+                    rang = index + 1,
+                    verratCode = repro.verrat.codeAnimal,
+                    dateSaillie = repro.dateSaillie.format(formatter),
+                    dateMiseBasReelle = repro.dateMiseBasReelle?.format(formatter),
+                    nbNesVivants = repro.nbNesVivants,
+                    nbMortsNes = repro.nbMortsNes,
+                    nbSevres = repro.nbSevres
                 )
             }
     }
