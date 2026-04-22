@@ -20,7 +20,6 @@ class ParametresEleveurController(
         return ResponseEntity.ok(service.getParametres())
     }
 
-    // L'éleveur définit ou modifie ses paramètres depuis l'app
     @PostMapping
     fun saveParametres(
         @Valid @RequestBody dto: ParametresEleveurDTO
