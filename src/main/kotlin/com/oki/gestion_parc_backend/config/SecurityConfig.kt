@@ -6,15 +6,25 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.web.SecurityFilterChain
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 import org.springframework.web.cors.CorsConfiguration
 import org.springframework.web.cors.CorsConfigurationSource
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource
 
+/**
+ * Configuration de la sécurité Spring Security.
+ *
+ * - JWT activé sur toutes les routes sauf /login et /api/utilisateurs (création de compte)
+ * - Les contrôles fins sont délégués aux @PreAuthorize sur chaque endpoint
+ * - @EnableMethodSecurity active hasAuthority() / hasRole() dans les annotations
+ */
 @Configuration
+@EnableMethodSecurity(prePostEnabled = true)
 class SecurityConfig(
     private val userDetailsService: CustomUserDetailsService,
     private val jwtFilter: JwtAuthenticationFilter
@@ -25,21 +35,20 @@ class SecurityConfig(
 
     @Bean
     fun authManager(http: HttpSecurity, passwordEncoder: PasswordEncoder): AuthenticationManager {
-        val authManagerBuilder = http.getSharedObject(AuthenticationManagerBuilder::class.java)
-        authManagerBuilder.userDetailsService(userDetailsService)
-            .passwordEncoder(passwordEncoder)
-        return authManagerBuilder.build()
+        val builder = http.getSharedObject(AuthenticationManagerBuilder::class.java)
+        builder.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder)
+        return builder.build()
     }
 
     @Bean
     fun corsConfigurationSource(): CorsConfigurationSource {
-        val configuration = CorsConfiguration()
-        configuration.allowedOrigins = listOf("http://localhost:4200")
-        configuration.allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "OPTIONS")
-        configuration.allowedHeaders = listOf("*")
-        configuration.allowCredentials = true
+        val config = CorsConfiguration()
+        config.allowedOrigins = listOf("http://localhost:4200")
+        config.allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "OPTIONS")
+        config.allowedHeaders = listOf("*")
+        config.allowCredentials = true
         val source = UrlBasedCorsConfigurationSource()
-        source.registerCorsConfiguration("/**", configuration)
+        source.registerCorsConfiguration("/**", config)
         return source
     }
 
@@ -49,11 +58,17 @@ class SecurityConfig(
             .cors { it.configurationSource(corsConfigurationSource()) }
             .csrf { it.disable() }
             .authorizeHttpRequests { auth ->
-                auth.anyRequest().permitAll() // TOUTES LES ROUTES ACCESSIBLES
+                auth
+                    // Routes publiques
+                    .requestMatchers("/login").permitAll()
+                    // Fichiers uploadés accessibles sans token (images de preuves, logos…)
+                    .requestMatchers("/uploads/**").permitAll()
+                    // Toutes les autres routes nécessitent un token JWT valide.
+                    // Les contrôles fins (quel rôle/permission) sont dans @PreAuthorize.
+                    .anyRequest().authenticated()
             }
-
-        // Filtre JWT désactivé temporairement
-        // .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter::class.java)
+            // Filtre JWT activé
+            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter::class.java)
 
         return http.build()
     }

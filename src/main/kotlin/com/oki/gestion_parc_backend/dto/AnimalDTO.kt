@@ -8,7 +8,13 @@ data class AnimalDTO(
     val typeAnimalId: Long,
 
     @field:NotNull
-    val dateEntree: String, //JJ/MM/AAAA
+    val dateEntree: String,      // format dd/MM/yyyy
+
+    /**
+     * Date de naissance de l'animal (optionnel).
+     * Format dd/MM/yyyy. Utilisée pour calculer l'âge à la vente (KPI SAD).
+     */
+    val dateNaissance: String? = null,   // format dd/MM/yyyy
 
     @field:Positive
     val poidsInitial: Double,

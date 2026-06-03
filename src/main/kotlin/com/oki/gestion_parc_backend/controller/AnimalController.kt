@@ -11,6 +11,7 @@ import org.springframework.web.multipart.MultipartFile
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
+import org.springframework.security.access.prepost.PreAuthorize
 @RestController
 @RequestMapping("/api/animaux")
 class AnimalController(
@@ -22,32 +23,40 @@ class AnimalController(
     private lateinit var animauxUploadDir: String
 
     @PostMapping
+    @PreAuthorize("hasAuthority('ANIMAL_WRITE')")
     fun creer(@RequestBody dto: AnimalDTO): AnimalResponseDTO = animalservice.creerAnimal(dto)
 
     @GetMapping
+    @PreAuthorize("hasAuthority('ANIMAL_READ')")
     fun getAll(): List<AnimalResponseDTO> = animalservice.getAllAnimaux()
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAuthority('ANIMAL_READ')")
     fun getById(@PathVariable id: Long): AnimalResponseDTO = animalservice.getAnimalById(id)
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('ANIMAL_WRITE')")
     fun update(@PathVariable id: Long, @RequestBody dto: AnimalDTO): AnimalResponseDTO =
         animalservice.updateAnimal(id, dto)
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('ANIMAL_DELETE')")
     fun delete(@PathVariable id: Long) = animalservice.deleteAnimal(id)
 
     @GetMapping("/count")
+    @PreAuthorize("hasAuthority('ANIMAL_READ')")
     fun countAllAnimals(): Long {
         return animalservice.countAllAnimals()
     }
 
     @GetMapping("/count-by-type")
+    @PreAuthorize("hasAuthority('ANIMAL_STATS')")
     fun countAnimalsByType(): List<Map<String, Any>> {
         return animalservice.countAnimalsByType()
     }
 
     @PostMapping("/{id}/photo", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
+    @PreAuthorize("hasAuthority('ANIMAL_PHOTO')")
     fun uploadPhoto(
         @PathVariable id: Long,
         @RequestParam("file") file: MultipartFile

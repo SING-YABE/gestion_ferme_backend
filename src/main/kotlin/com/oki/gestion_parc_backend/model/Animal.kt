@@ -18,6 +18,14 @@ data class Animal(
     @Column(nullable = false)
     val dateEntree: LocalDate,
 
+    /**
+     * Date de naissance de l'animal.
+     * Utilisée pour calculer l'âge à la vente (KPI SAD).
+     * Nullable pour rétrocompatibilité avec les animaux existants.
+     */
+    @Column(nullable = true)
+    val dateNaissance: LocalDate? = null,
+
     @Column(nullable = false)
     val poidsInitial: Double,
 

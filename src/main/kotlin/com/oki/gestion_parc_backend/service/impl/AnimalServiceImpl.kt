@@ -50,12 +50,13 @@ class AnimalServiceImpl(
         val codeAnimal = "$prefix${count + 1}"
 
         val animal = Animal(
-            codeAnimal = codeAnimal,
-            typeAnimal = typeAnimal,
-            dateEntree = LocalDate.parse(dto.dateEntree, formatter),
+            codeAnimal   = codeAnimal,
+            typeAnimal   = typeAnimal,
+            dateEntree   = LocalDate.parse(dto.dateEntree, formatter),
+            dateNaissance = dto.dateNaissance?.let { LocalDate.parse(it, formatter) },
             poidsInitial = dto.poidsInitial,
-            etatSante = etatSante,
-            box = box,
+            etatSante    = etatSante,
+            box          = box,
             observations = dto.observations
         )
 
@@ -84,12 +85,13 @@ class AnimalServiceImpl(
             .orElseThrow { IllegalArgumentException("EtatSante avec id ${dto.etatSanteId} non trouvé") }
 
         val updated = animal.copy(
-            typeAnimal = typeAnimal,
-            box = box,
-            etatSante = etatSante,
-            dateEntree = LocalDate.parse(dto.dateEntree, formatter),
-            poidsInitial = dto.poidsInitial,
-            observations = dto.observations
+            typeAnimal    = typeAnimal,
+            box           = box,
+            etatSante     = etatSante,
+            dateEntree    = LocalDate.parse(dto.dateEntree, formatter),
+            dateNaissance = dto.dateNaissance?.let { LocalDate.parse(it, formatter) },
+            poidsInitial  = dto.poidsInitial,
+            observations  = dto.observations
         )
 
         return AnimalMapper.toResponseDTO(animalRepository.save(updated))

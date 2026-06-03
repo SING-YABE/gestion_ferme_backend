@@ -13,6 +13,7 @@ object AlimentationMapper {
         codeAnimal = entity.animal?.codeAnimal,
         typeAnimalId = entity.typeAnimal?.id,
         fournisseurId = entity.fournisseur?.id,
-        coutTotal = entity.coutTotal
+        coutTotal = entity.coutTotal,
+        sourceReference = entity.sourceReference
     )
 }

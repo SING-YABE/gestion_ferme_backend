@@ -36,9 +36,13 @@ class JwtUtil {
     }
 
     fun generateToken(userDetails: UserDetails): String {
-        val authority = userDetails.authorities.firstOrNull()?.authority ?: "UTILISATEUR"
-        val role = if (authority.startsWith("ROLE_")) authority.substring(5) else authority
-        val claims: Map<String, Any> = mapOf("role" to role)
+        // Spring Security's User trie les authorities alphabétiquement,
+        // donc on cherche explicitement celle qui commence par ROLE_
+        val roleAuthority = userDetails.authorities
+            .firstOrNull { it.authority.startsWith("ROLE_") }
+            ?.authority ?: "ROLE_OUVRIER"
+        // On stocke le nom complet (ex: ROLE_GERANT) pour cohérence avec le frontend
+        val claims: Map<String, Any> = mapOf("role" to roleAuthority)
         return createToken(claims, userDetails.username)
     }
 

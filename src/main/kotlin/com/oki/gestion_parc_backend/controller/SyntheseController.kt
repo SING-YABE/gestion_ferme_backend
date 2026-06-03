@@ -4,6 +4,7 @@ import com.oki.gestion_parc_backend.service.SyntheseService
 import org.springframework.web.bind.annotation.*
 import java.time.LocalDate
 import java.time.format.DateTimeParseException
+import org.springframework.security.access.prepost.PreAuthorize
 
 @RestController
 @RequestMapping("/api/synthese")
@@ -14,6 +15,7 @@ class SyntheseController(
 
 
     @GetMapping
+    @PreAuthorize("hasAuthority('SYNTHESE_READ')")
     fun getSynthese(
         @RequestParam(required = false) start: String?,
         @RequestParam(required = false) end: String?

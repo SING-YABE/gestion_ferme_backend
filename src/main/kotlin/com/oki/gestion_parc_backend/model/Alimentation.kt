@@ -25,7 +25,17 @@ data class Alimentation(
     val typeAnimal: TypeAnimal? = null,
 
     @ManyToOne(optional = true)
-    val fournisseur: Fournisseur? = null
+    val fournisseur: Fournisseur? = null,
+
+    /**
+     * Référence documentaire utilisée pour définir cette ration.
+     * Exemples : "DGPA/MRAH 2021", "AVIPRO/WISIUM", "ALF ISSEN", "ONG Thamani"
+     *
+     * SOURCE: Fiche simplifiée alimentation des porcs — DGPA/MRAH, Burkina Faso — Juin 2021
+     * SOURCE: Fiche technique n°3 alimentation porcs — ONG Thamani, Bobo-Dioulasso — secteur 24
+     */
+    @Column(nullable = true, length = 200)
+    val sourceReference: String? = null
 ) {
     val coutTotal: Double
         get() = ingredients.sumOf { it.sousTotal }

@@ -6,6 +6,7 @@ import com.oki.gestion_parc_backend.service.AppSettingsService
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
+import org.springframework.security.access.prepost.PreAuthorize
 
 @RestController
 @RequestMapping("/api/settings")
@@ -14,10 +15,12 @@ class AppSettingsController(
 ) {
 
     @GetMapping
+    @PreAuthorize("hasAuthority('SETTINGS_READ')")
     fun getSettings(): ResponseEntity<AppSettings> =
         ResponseEntity.ok(appSettingsService.getSettings())
 
     @PutMapping
+    @PreAuthorize("hasAuthority('SETTINGS_WRITE')")
     fun updateSettings(
         @RequestBody dto: UpdateSettingsDto
     ): ResponseEntity<AppSettings> =
@@ -26,6 +29,7 @@ class AppSettingsController(
         )
 
     @PostMapping("/logo")
+    @PreAuthorize("hasAuthority('SETTINGS_LOGO')")
     fun uploadLogo(
         @RequestParam("file") file: MultipartFile
     ): ResponseEntity<AppSettings> {

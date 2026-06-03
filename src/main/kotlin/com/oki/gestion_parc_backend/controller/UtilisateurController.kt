@@ -4,6 +4,7 @@ import com.oki.gestion_parc_backend.model.Utilisateur
 import com.oki.gestion_parc_backend.repository.RoleRepository
 import com.oki.gestion_parc_backend.service.UtilisateurService
 import org.springframework.web.bind.annotation.*
+import org.springframework.security.access.prepost.PreAuthorize
 
 @RestController
 @RequestMapping("/api/utilisateurs")
@@ -23,6 +24,7 @@ class UtilisateurController(
     )
 
     @PostMapping
+    @PreAuthorize("hasAuthority('UTILISATEUR_WRITE')")
     fun createUser(@RequestBody req: CreateUserRequest): Utilisateur {
 
         val role = req.roleId?.let {
@@ -42,5 +44,6 @@ class UtilisateurController(
     }
 
     @GetMapping
+    @PreAuthorize("hasAuthority('UTILISATEUR_READ')")
     fun list(): List<Utilisateur> = utilisateurService.list()
 }

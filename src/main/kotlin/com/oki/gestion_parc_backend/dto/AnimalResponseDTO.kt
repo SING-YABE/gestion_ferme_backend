@@ -19,6 +19,7 @@ data class AnimalResponseDTO(
     val typeAnimalId: Long,
     val typeAnimalNom: String,
     val dateEntree: String,
+    val dateNaissance: String?,   // nullable — animaux existants sans date de naissance
     val poidsInitial: Double,
     val etatSanteId: Long,
     val etatSanteLibelle: String,

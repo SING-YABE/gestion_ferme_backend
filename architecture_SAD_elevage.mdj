@@ -1,0 +1,1679 @@
+{
+  "_type": "Project",
+  "_id": "PROJECT_SAD_2026",
+  "name": "SAD Élevage Porcin — Architecture Système 2026",
+  "ownedElements": [
+    {
+      "_type": "UMLModel",
+      "_id": "MODEL_GLOBAL",
+      "name": "Architecture Technique Complète",
+      "documentation": "Projet Mémoire Master 2026 — Burkina Faso\nPlateforme IA Élevage Porcin de Précision\nAnalyse basée sur code source réel",
+      "ownedElements": [
+        {
+          "_type": "UMLComponentDiagram",
+          "_id": "DF1026E736514161A1E6",
+          "name": "01 — Architecture Globale",
+          "documentation": "Vue d'ensemble du système SAD Élevage Porcin Burkina Faso\nCe diagramme montre les 4 composants applicatifs principaux,\nles 2 bases de données, et les services externes.",
+          "ownedElements": []
+        },
+        {
+          "_type": "UMLClassDiagram",
+          "_id": "8A54E7B234EC4C76AA62",
+          "name": "02 — Modèle de Données Spring Boot (JPA)",
+          "documentation": "Entités JPA Hibernate — Base PostgreSQL snackboost_db\nRelations identifiées à partir du code source Kotlin",
+          "ownedElements": []
+        },
+        {
+          "_type": "UMLSequenceDiagram",
+          "_id": "8C9A96697FC84C928997",
+          "name": "03 — Flux Authentification JWT",
+          "documentation": "POST /login → Spring Boot → BCrypt verify → JWT token\nToken stocké: Flutter (SecureStorage), Angular (localStorage)",
+          "ownedElements": []
+        },
+        {
+          "_type": "UMLSequenceDiagram",
+          "_id": "26DB55A047084B39AD9A",
+          "name": "04 — Flux Extraction Prix WhatsApp",
+          "documentation": "WhatsApp → Webhook Python → Gemini 2.5 Flash → Extract prix\n→ Whisper (audio) → PostgreSQL prix_aliments\n→ Entraînement XGBoost → Prédictions mobiles/web",
+          "ownedElements": []
+        },
+        {
+          "_type": "UMLComponentDiagram",
+          "_id": "EDB2681D41804E0B82E8",
+          "name": "05 — Backend Python FastAPI (Détail)",
+          "documentation": "Architecture interne du backend Python\nRouters, Services, ML Pipeline, External APIs",
+          "ownedElements": []
+        },
+        {
+          "_type": "UMLComponentDiagram",
+          "_id": "F63F778AE7B04DEA99DD",
+          "name": "06 — Mobile Flutter (Architecture par couche)",
+          "documentation": "Architecture Flutter — Provider Pattern\nCouches: Presentation → Provider → Repository → Service HTTP",
+          "ownedElements": []
+        },
+        {
+          "_type": "UMLPackage",
+          "_id": "CCA30A5688714A6BABBB",
+          "name": "Composants Principaux",
+          "ownedElements": [
+            {
+              "_type": "UMLComponent",
+              "_id": "COMP_FLUTTER_MOBILE",
+              "name": "Flutter Mobile (Android/iOS)",
+              "documentation": "App élevage porcin — Dart/Flutter\nPatron: Provider + Repository\nCibles: Android 8+, iOS 13+",
+              "ownedElements": [
+                {
+                  "_type": "UMLComponent",
+                  "_id": "PKG_MOB_AUTH",
+                  "name": "Auth (JWT)"
+                },
+                {
+                  "_type": "UMLComponent",
+                  "_id": "PKG_MOB_DASH",
+                  "name": "Dashboard & KPIs"
+                },
+                {
+                  "_type": "UMLComponent",
+                  "_id": "PKG_MOB_ANIMAUX",
+                  "name": "Animaux"
+                },
+                {
+                  "_type": "UMLComponent",
+                  "_id": "PKG_MOB_REPRO",
+                  "name": "Reproductions + Alertes"
+                },
+                {
+                  "_type": "UMLComponent",
+                  "_id": "PKG_MOB_SANTE",
+                  "name": "Santé (Pesées + Soins)"
+                },
+                {
+                  "_type": "UMLComponent",
+                  "_id": "PKG_MOB_ALIM",
+                  "name": "Alimentation (Rations)"
+                },
+                {
+                  "_type": "UMLComponent",
+                  "_id": "PKG_MOB_FINANCE",
+                  "name": "Finances (Synthèse + Dépenses)"
+                },
+                {
+                  "_type": "UMLComponent",
+                  "_id": "PKG_MOB_ALERTES",
+                  "name": "Alertes IA + Prédictions aliments"
+                }
+              ]
+            },
+            {
+              "_type": "UMLComponent",
+              "_id": "COMP_ANGULAR_WEB",
+              "name": "Angular Frontend (Web Back-Office)",
+              "documentation": "SPA Angular 17 — TypeScript\nApp name: FARM PRO\nPort: 4200 (dev), Nginx (prod)\nAuthentication: JWT LocalStorage",
+              "ownedElements": [
+                {
+                  "_type": "UMLComponent",
+                  "_id": "PKG_ANG_AUTH",
+                  "name": "Auth + Guards + Interceptor"
+                },
+                {
+                  "_type": "UMLComponent",
+                  "_id": "PKG_ANG_ADMIN",
+                  "name": "Admin (Utilisateurs, Rôles)"
+                },
+                {
+                  "_type": "UMLComponent",
+                  "_id": "PKG_ANG_ELEVAGE",
+                  "name": "Élevage (Animaux, Repro, Soins, Alim)"
+                },
+                {
+                  "_type": "UMLComponent",
+                  "_id": "PKG_ANG_SAD",
+                  "name": "SAD / KPI / Prédictions"
+                },
+                {
+                  "_type": "UMLComponent",
+                  "_id": "PKG_ANG_FINANCE",
+                  "name": "Finances (Synthèse, Ventes, Dépenses)"
+                }
+              ]
+            },
+            {
+              "_type": "UMLComponent",
+              "_id": "COMP_SPRING_BOOT",
+              "name": "Spring Boot Backend (Kotlin)",
+              "documentation": "Spring Boot 3 — Kotlin\nPort: 8080\nDB: PostgreSQL snackboost_db\nSécurité: JWT + BCrypt\nRôles: ADMIN, GESTIONNAIRE, DEMANDEUR, APPROBATEUR\nUpload: logos + photos animaux",
+              "ownedElements": [
+                {
+                  "_type": "UMLComponent",
+                  "_id": "PKG_SP_AUTH",
+                  "name": "Auth (JWT Filter + JwtUtil)"
+                },
+                {
+                  "_type": "UMLComponent",
+                  "_id": "PKG_SP_ANIMAL",
+                  "name": "Animaux + TypeAnimal + EtatSante"
+                },
+                {
+                  "_type": "UMLComponent",
+                  "_id": "PKG_SP_REPRO",
+                  "name": "Reproductions + Alertes + ISSF"
+                },
+                {
+                  "_type": "UMLComponent",
+                  "_id": "PKG_SP_SANTE",
+                  "name": "Santé (Pesées + Soins + Traitements)"
+                },
+                {
+                  "_type": "UMLComponent",
+                  "_id": "PKG_SP_ALIM",
+                  "name": "Alimentation (Rations + Ingrédients)"
+                },
+                {
+                  "_type": "UMLComponent",
+                  "_id": "PKG_SP_VENTE",
+                  "name": "Ventes + TypeVente"
+                },
+                {
+                  "_type": "UMLComponent",
+                  "_id": "PKG_SP_FINANCE",
+                  "name": "Finances (Dépenses + Charges + Synthèse)"
+                },
+                {
+                  "_type": "UMLComponent",
+                  "_id": "PKG_SP_ADMIN",
+                  "name": "Admin CRUD (Users + Rôles + Settings)"
+                }
+              ]
+            },
+            {
+              "_type": "UMLComponent",
+              "_id": "COMP_PYTHON_FASTAPI",
+              "name": "Python FastAPI Backend",
+              "documentation": "FastAPI — Python 3.11\nPort: 8000\nDB: PostgreSQL whatsapp_prices\nML: XGBoost (prix porcs + aliments)\nIA Générative: Gemini 2.5 Flash\nTranscription: OpenAI Whisper",
+              "ownedElements": [
+                {
+                  "_type": "UMLComponent",
+                  "_id": "PKG_PY_PRED",
+                  "name": "Prédictions Prix Porcs (XGBoost)"
+                },
+                {
+                  "_type": "UMLComponent",
+                  "_id": "PKG_PY_ALIM",
+                  "name": "Prédictions Prix Aliments (XGBoost)"
+                },
+                {
+                  "_type": "UMLComponent",
+                  "_id": "PKG_PY_EXP",
+                  "name": "Dépenses CRUD"
+                },
+                {
+                  "_type": "UMLComponent",
+                  "_id": "PKG_PY_KPI",
+                  "name": "KPIs Élevage + Analyse LLM (Gemini)"
+                },
+                {
+                  "_type": "UMLComponent",
+                  "_id": "PKG_PY_ADV",
+                  "name": "Alertes Conseiller IA (farm_advisor)"
+                },
+                {
+                  "_type": "UMLComponent",
+                  "_id": "PKG_PY_ML",
+                  "name": "ML Training Pipeline"
+                },
+                {
+                  "_type": "UMLComponent",
+                  "_id": "PKG_PY_WEBHOOK",
+                  "name": "Webhook WhatsApp + Whisper"
+                }
+              ]
+            },
+            {
+              "_type": "UMLComponent",
+              "_id": "COMP_PG_SPRING",
+              "name": "PostgreSQL — snackboost_db",
+              "documentation": "Tables: animal, type_animal, reproduction, pesee,\nsoin_animal, alimentation, ingredient_alimentation,\nvente, vente_animal, depense, utilisateur, role,\nbatiment, box, etat_sante, type_depense, fournisseur..."
+            },
+            {
+              "_type": "UMLComponent",
+              "_id": "COMP_PG_PYTHON",
+              "name": "PostgreSQL — whatsapp_prices",
+              "documentation": "Tables: prix_extraits, prix_aliments,\npredictions, depense, type_depense"
+            },
+            {
+              "_type": "UMLComponent",
+              "_id": "COMP_GEMINI_AI",
+              "name": "Google Gemini AI (gemini-2.5-flash)",
+              "documentation": "Extraction prix WhatsApp\nAnalyse KPI + recommandations\nConseils élevage porcin"
+            },
+            {
+              "_type": "UMLComponent",
+              "_id": "COMP_WHATSAPP",
+              "name": "WhatsApp Webhook",
+              "documentation": "Réception messages éleveurs\nTexte + Audio (prix marché)"
+            },
+            {
+              "_type": "UMLComponent",
+              "_id": "COMP_WHISPER",
+              "name": "OpenAI Whisper (base ~140MB)",
+              "documentation": "Transcription audio → texte\nMessages vocaux WhatsApp"
+            },
+            {
+              "_type": "UMLComponent",
+              "_id": "COMP_UPLOAD_DIR",
+              "name": "Stockage Fichiers Local",
+              "documentation": "/Users/patrick/uploads/logos\n/Users/patrick/uploads/animaux\nmax 5MB par fichier",
+              "ownedElements": []
+            },
+            {
+              "_type": "UMLComponent",
+              "_id": "COMP_ML_MODELS",
+              "name": "Modèles ML (XGBoost .pkl)",
+              "documentation": "xgboost_model.pkl (prix porcs)\nxgboost_aliments.pkl (prix aliments)\nFeatures: type animal, date, saison"
+            },
+            {
+              "_type": "UMLDependency",
+              "_id": "4D5F23B431424AD49C17",
+              "name": "HTTP/REST JWT :8080",
+              "source": {
+                "$ref": "COMP_FLUTTER_MOBILE"
+              },
+              "target": {
+                "$ref": "COMP_SPRING_BOOT"
+              }
+            },
+            {
+              "_type": "UMLDependency",
+              "_id": "CFB9DCB10DB148D1A95A",
+              "name": "HTTP/REST :8000",
+              "source": {
+                "$ref": "COMP_FLUTTER_MOBILE"
+              },
+              "target": {
+                "$ref": "COMP_PYTHON_FASTAPI"
+              }
+            },
+            {
+              "_type": "UMLDependency",
+              "_id": "19E8D88BB27842498924",
+              "name": "HTTP/REST JWT :8080 (proxy /api)",
+              "source": {
+                "$ref": "COMP_ANGULAR_WEB"
+              },
+              "target": {
+                "$ref": "COMP_SPRING_BOOT"
+              }
+            },
+            {
+              "_type": "UMLDependency",
+              "_id": "79C003E0E45647AF933B",
+              "name": "HTTP/REST :8000 (direct)",
+              "source": {
+                "$ref": "COMP_ANGULAR_WEB"
+              },
+              "target": {
+                "$ref": "COMP_PYTHON_FASTAPI"
+              }
+            },
+            {
+              "_type": "UMLDependency",
+              "_id": "CE361DC95DEC4F45AEB6",
+              "name": "JPA/Hibernate JDBC",
+              "source": {
+                "$ref": "COMP_SPRING_BOOT"
+              },
+              "target": {
+                "$ref": "COMP_PG_SPRING"
+              }
+            },
+            {
+              "_type": "UMLDependency",
+              "_id": "0F84F7633FC94EB19B35",
+              "name": "SQLAlchemy psycopg2",
+              "source": {
+                "$ref": "COMP_PYTHON_FASTAPI"
+              },
+              "target": {
+                "$ref": "COMP_PG_PYTHON"
+              }
+            },
+            {
+              "_type": "UMLDependency",
+              "_id": "8C417F51A0B642F380AE",
+              "name": "google.generativeai SDK",
+              "source": {
+                "$ref": "COMP_PYTHON_FASTAPI"
+              },
+              "target": {
+                "$ref": "COMP_GEMINI_AI"
+              }
+            },
+            {
+              "_type": "UMLDependency",
+              "_id": "2F5DC6AB61834F118315",
+              "name": "POST /webhook/whatsapp",
+              "source": {
+                "$ref": "COMP_WHATSAPP"
+              },
+              "target": {
+                "$ref": "COMP_PYTHON_FASTAPI"
+              }
+            },
+            {
+              "_type": "UMLDependency",
+              "_id": "678E6EBB9FE441A7B886",
+              "name": "whisper.load_model()",
+              "source": {
+                "$ref": "COMP_PYTHON_FASTAPI"
+              },
+              "target": {
+                "$ref": "COMP_WHISPER"
+              }
+            },
+            {
+              "_type": "UMLDependency",
+              "_id": "E22B224C97B348E8B836",
+              "name": "MultipartFile upload",
+              "source": {
+                "$ref": "COMP_SPRING_BOOT"
+              },
+              "target": {
+                "$ref": "COMP_UPLOAD_DIR"
+              }
+            },
+            {
+              "_type": "UMLDependency",
+              "_id": "61BA6DD96B6C4769AB0A",
+              "name": "joblib.load() / .pkl",
+              "source": {
+                "$ref": "COMP_PYTHON_FASTAPI"
+              },
+              "target": {
+                "$ref": "COMP_ML_MODELS"
+              }
+            },
+            {
+              "_type": "UMLDependency",
+              "_id": "55A9EBDD464947AA86C2",
+              "name": "Training data",
+              "source": {
+                "$ref": "COMP_ML_MODELS"
+              },
+              "target": {
+                "$ref": "COMP_PG_PYTHON"
+              }
+            }
+          ]
+        },
+        {
+          "_type": "UMLPackage",
+          "_id": "4C5A98F9B41F4A648878",
+          "name": "Entités JPA (Spring Boot)",
+          "ownedElements": [
+            {
+              "_type": "UMLClass",
+              "_id": "ENT_ANIMAL",
+              "name": "Animal",
+              "attributes": [
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "3ADFD0CA115F476096F3",
+                  "name": "id: Long"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "38726EECA9A04EB6933D",
+                  "name": "codeAnimal: String"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "54965A0CEBD64128B28E",
+                  "name": "dateEntree: LocalDate"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "F097BFDF69C3408B8116",
+                  "name": "dateNaissance: LocalDate?"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "22618DC4221542C29B24",
+                  "name": "poidsInitial: Double"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "7C72913E595643ECBD36",
+                  "name": "vendu: Boolean"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "04383781068149818AC0",
+                  "name": "photoUrl: String?"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "E5897FBFD97743A49F99",
+                  "name": "observations: String?"
+                }
+              ],
+              "operations": [
+                {
+                  "_type": "UMLOperation",
+                  "_id": "33CBDF7FB9114E40B06B",
+                  "name": "countByTypeAnimal()"
+                }
+              ]
+            },
+            {
+              "_type": "UMLClass",
+              "_id": "ENT_TYPE_ANIMAL",
+              "name": "TypeAnimal",
+              "attributes": [
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "8699EA0B6CA944B08254",
+                  "name": "id: Long"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "C1307EF55BA04DB0AC23",
+                  "name": "nom: String"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "76EF7268EAB74251AE18",
+                  "name": "prefix: String"
+                }
+              ],
+              "operations": []
+            },
+            {
+              "_type": "UMLClass",
+              "_id": "ENT_ETAT_SANTE",
+              "name": "EtatSante",
+              "attributes": [
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "6B47975DCA144EEAA109",
+                  "name": "id: Long"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "81EBD88931834F338556",
+                  "name": "description: String"
+                }
+              ],
+              "operations": []
+            },
+            {
+              "_type": "UMLClass",
+              "_id": "ENT_BATIMENT",
+              "name": "Batiment",
+              "attributes": [
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "5880DDEBEA7F4AEAB060",
+                  "name": "id: Long"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "B3B10A3D98164DAC8EE2",
+                  "name": "nom: String"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "323F82612F8B4FACB01B",
+                  "name": "capacite: Int"
+                }
+              ],
+              "operations": []
+            },
+            {
+              "_type": "UMLClass",
+              "_id": "ENT_BOX",
+              "name": "Box",
+              "attributes": [
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "1475EC3DB86E49A18CC3",
+                  "name": "id: Long"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "C07DC136274E49099CB3",
+                  "name": "codeBox: String"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "D50250E66D2243878B3B",
+                  "name": "capacite: Int"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "72B96EDE1F664C60AA5F",
+                  "name": "occupe: Int"
+                }
+              ],
+              "operations": []
+            },
+            {
+              "_type": "UMLClass",
+              "_id": "ENT_REPRODUCTION",
+              "name": "Reproduction",
+              "attributes": [
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "EC033F9A13C84F20A276",
+                  "name": "id: Long"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "C4967E482B0D43368F62",
+                  "name": "dateSaillie: LocalDate"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "7C637019A85345A78E72",
+                  "name": "dateMiseBasPrevue: LocalDate"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "2ED4B70F0D5345DF9117",
+                  "name": "dateMiseBasReelle: LocalDate?"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "9D8DAAD5837348BEAEF1",
+                  "name": "nbNesVivants: Int?"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "8B23B012ACC04DA48F04",
+                  "name": "nbMortsNes: Int?"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "C4173ED84E444EA98A30",
+                  "name": "nbSevres: Int?"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "B197EC3A5BC842CFAABF",
+                  "name": "observations: String?"
+                }
+              ],
+              "operations": []
+            },
+            {
+              "_type": "UMLClass",
+              "_id": "ENT_PESEE",
+              "name": "Pesee",
+              "attributes": [
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "98E3B0AE16984D27B336",
+                  "name": "id: Long"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "EF205BA932474FA2866A",
+                  "name": "poids: Double"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "87C4DDA065464CFCB559",
+                  "name": "datePesee: LocalDate"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "046240AD737843C1AFAF",
+                  "name": "observations: String?"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "7E08392529934C58833D",
+                  "name": "gmqDepuisPrecedente: Double?"
+                }
+              ],
+              "operations": []
+            },
+            {
+              "_type": "UMLClass",
+              "_id": "ENT_SOIN",
+              "name": "SoinAnimal",
+              "attributes": [
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "83DBFF414C3441B7A104",
+                  "name": "id: Long"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "E40BAEE84431450292E8",
+                  "name": "dateSoin: LocalDate"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "DC7511D0B5044E27AC04",
+                  "name": "motif: String"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "767A3A3F8109442D90A4",
+                  "name": "traitement: String"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "138EB9A5E9E241ED947E",
+                  "name": "cout: Double"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "BF270F83BBA34381A28E",
+                  "name": "coutMedicament: Double"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "E5BD7A3E5BBE409B9081",
+                  "name": "veterinaire: String"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "5F6659FAB832420791CB",
+                  "name": "soinCollectif: Boolean"
+                }
+              ],
+              "operations": []
+            },
+            {
+              "_type": "UMLClass",
+              "_id": "ENT_ALIMENTATION",
+              "name": "Alimentation",
+              "attributes": [
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "80C6D36F889544D59AA1",
+                  "name": "id: Long"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "8C0AD8547E89420FBE4A",
+                  "name": "date: LocalDate"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "28B0E0262F1D4AA49896",
+                  "name": "mode: String (ACHAT|FABRICATION)"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "60A107580524495FA150",
+                  "name": "coutTotal: Double?"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "B2BCD196A754426D8594",
+                  "name": "sourceReference: String?"
+                }
+              ],
+              "operations": []
+            },
+            {
+              "_type": "UMLClass",
+              "_id": "ENT_INGREDIENT",
+              "name": "Ingredient",
+              "attributes": [
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "9CC50CAD7CD149909310",
+                  "name": "id: Long"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "BE4C557AF2C24696BFEA",
+                  "name": "nom: String"
+                }
+              ],
+              "operations": []
+            },
+            {
+              "_type": "UMLClass",
+              "_id": "ENT_VENTE",
+              "name": "Vente",
+              "attributes": [
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "62AA65CE68A14A3FBE0B",
+                  "name": "id: Long"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "63E5F8780787440FB619",
+                  "name": "dateVente: LocalDate"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "3F1E144B93DD46CAA552",
+                  "name": "dateEnlevement: LocalDate"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "1069F69ECFC44BA4AFEF",
+                  "name": "client: String"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "B4C5CE0EBEB94BB2A0A6",
+                  "name": "montantTotal: Double"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "97C6400DF1134DF58CEC",
+                  "name": "nombreAnimaux: Int"
+                }
+              ],
+              "operations": []
+            },
+            {
+              "_type": "UMLClass",
+              "_id": "ENT_DEPENSE",
+              "name": "Depense",
+              "attributes": [
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "135C910D9A464AD29F22",
+                  "name": "id: Long"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "A4B641A814454D608BB3",
+                  "name": "date: LocalDate"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "56ABD7C832AD440A9B65",
+                  "name": "description: String"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "A9DBC9DEC95046DAB485",
+                  "name": "montant: Double"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "008FD4283FF44EF589C6",
+                  "name": "modePaiement: String"
+                }
+              ],
+              "operations": []
+            },
+            {
+              "_type": "UMLClass",
+              "_id": "ENT_UTILISATEUR",
+              "name": "Utilisateur",
+              "attributes": [
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "2A1CE3758E9746119714",
+                  "name": "id: Long"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "E96347799F83453EA743",
+                  "name": "email: String"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "E6CA18033FF5410C8981",
+                  "name": "password: String (BCrypt)"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "C7939045AF39467D87C9",
+                  "name": "nom: String"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "381D1EF19985461FA831",
+                  "name": "prenom: String"
+                }
+              ],
+              "operations": []
+            },
+            {
+              "_type": "UMLClass",
+              "_id": "ENT_ROLE",
+              "name": "Role",
+              "attributes": [
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "ED2F90AA1B424FDCBDB2",
+                  "name": "id: Long"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "6B5682A367FD4285A0CB",
+                  "name": "nom: String (ADMIN|GESTIONNAIRE|DEMANDEUR|APPROBATEUR)"
+                }
+              ],
+              "operations": []
+            },
+            {
+              "_type": "UMLAssociation",
+              "_id": "80DD22697963474C98A1",
+              "name": "typeAnimal",
+              "end1": {
+                "_type": "UMLAssociationEnd",
+                "_id": "055D03E7DAC14C73B405",
+                "reference": {
+                  "$ref": "ENT_ANIMAL"
+                },
+                "multiplicity": "N"
+              },
+              "end2": {
+                "_type": "UMLAssociationEnd",
+                "_id": "37071BFEC9484A8C9CE7",
+                "reference": {
+                  "$ref": "ENT_TYPE_ANIMAL"
+                },
+                "multiplicity": "1"
+              }
+            },
+            {
+              "_type": "UMLAssociation",
+              "_id": "372EA0E210E5433AAC1A",
+              "name": "etatSante",
+              "end1": {
+                "_type": "UMLAssociationEnd",
+                "_id": "16FC1DB3D76847989BD3",
+                "reference": {
+                  "$ref": "ENT_ANIMAL"
+                },
+                "multiplicity": "N"
+              },
+              "end2": {
+                "_type": "UMLAssociationEnd",
+                "_id": "2057FD85107445748E65",
+                "reference": {
+                  "$ref": "ENT_ETAT_SANTE"
+                },
+                "multiplicity": "1"
+              }
+            },
+            {
+              "_type": "UMLAssociation",
+              "_id": "C4788DB3730440BB987E",
+              "name": "box",
+              "end1": {
+                "_type": "UMLAssociationEnd",
+                "_id": "6730BAF62A6349B2ACE0",
+                "reference": {
+                  "$ref": "ENT_ANIMAL"
+                },
+                "multiplicity": "N"
+              },
+              "end2": {
+                "_type": "UMLAssociationEnd",
+                "_id": "D08B7B4CF6EF4C80B76E",
+                "reference": {
+                  "$ref": "ENT_BOX"
+                },
+                "multiplicity": "1"
+              }
+            },
+            {
+              "_type": "UMLAssociation",
+              "_id": "A7316003D027480990D6",
+              "name": "batiment",
+              "end1": {
+                "_type": "UMLAssociationEnd",
+                "_id": "E1EC82738BAA4C5CBE06",
+                "reference": {
+                  "$ref": "ENT_BOX"
+                },
+                "multiplicity": "N"
+              },
+              "end2": {
+                "_type": "UMLAssociationEnd",
+                "_id": "57446F327E9140049236",
+                "reference": {
+                  "$ref": "ENT_BATIMENT"
+                },
+                "multiplicity": "1"
+              }
+            },
+            {
+              "_type": "UMLAssociation",
+              "_id": "5EA4643774A14C4C9361",
+              "name": "truie",
+              "end1": {
+                "_type": "UMLAssociationEnd",
+                "_id": "D8DEF4204AFB4D7B9D5E",
+                "reference": {
+                  "$ref": "ENT_REPRODUCTION"
+                },
+                "multiplicity": "N"
+              },
+              "end2": {
+                "_type": "UMLAssociationEnd",
+                "_id": "2B9C9631AB014EA186BB",
+                "reference": {
+                  "$ref": "ENT_ANIMAL"
+                },
+                "multiplicity": "1"
+              }
+            },
+            {
+              "_type": "UMLAssociation",
+              "_id": "8D75A21994A74969955A",
+              "name": "verrat",
+              "end1": {
+                "_type": "UMLAssociationEnd",
+                "_id": "94228DFB87BD48739AE2",
+                "reference": {
+                  "$ref": "ENT_REPRODUCTION"
+                },
+                "multiplicity": "N"
+              },
+              "end2": {
+                "_type": "UMLAssociationEnd",
+                "_id": "1C83AEFAC0004ADEAAC8",
+                "reference": {
+                  "$ref": "ENT_ANIMAL"
+                },
+                "multiplicity": "1"
+              }
+            },
+            {
+              "_type": "UMLAssociation",
+              "_id": "25D1B874E0024B4C99F0",
+              "name": "animal",
+              "end1": {
+                "_type": "UMLAssociationEnd",
+                "_id": "7BC9F776E6FA404A9810",
+                "reference": {
+                  "$ref": "ENT_PESEE"
+                },
+                "multiplicity": "N"
+              },
+              "end2": {
+                "_type": "UMLAssociationEnd",
+                "_id": "12FF66D72D104C28BA0F",
+                "reference": {
+                  "$ref": "ENT_ANIMAL"
+                },
+                "multiplicity": "1"
+              }
+            },
+            {
+              "_type": "UMLAssociation",
+              "_id": "E16B8A9AA7CE432FB394",
+              "name": "animal",
+              "end1": {
+                "_type": "UMLAssociationEnd",
+                "_id": "FD779AB592594F3FBD7C",
+                "reference": {
+                  "$ref": "ENT_SOIN"
+                },
+                "multiplicity": "N"
+              },
+              "end2": {
+                "_type": "UMLAssociationEnd",
+                "_id": "49E049492FFA433B8902",
+                "reference": {
+                  "$ref": "ENT_ANIMAL"
+                },
+                "multiplicity": "0..1"
+              }
+            },
+            {
+              "_type": "UMLAssociation",
+              "_id": "96F6354A696F43AAB3AC",
+              "name": "ingredients",
+              "end1": {
+                "_type": "UMLAssociationEnd",
+                "_id": "74D71E4FBFF348BABB74",
+                "reference": {
+                  "$ref": "ENT_ALIMENTATION"
+                },
+                "multiplicity": "N"
+              },
+              "end2": {
+                "_type": "UMLAssociationEnd",
+                "_id": "338ED8213FC94C69A3C1",
+                "reference": {
+                  "$ref": "ENT_INGREDIENT"
+                },
+                "multiplicity": "N"
+              }
+            },
+            {
+              "_type": "UMLAssociation",
+              "_id": "B1DD6FD8ED6547E79AA2",
+              "name": "role",
+              "end1": {
+                "_type": "UMLAssociationEnd",
+                "_id": "2C57FC82231249C9912E",
+                "reference": {
+                  "$ref": "ENT_UTILISATEUR"
+                },
+                "multiplicity": "N"
+              },
+              "end2": {
+                "_type": "UMLAssociationEnd",
+                "_id": "0B11343D8E3E45B59F1B",
+                "reference": {
+                  "$ref": "ENT_ROLE"
+                },
+                "multiplicity": "1"
+              }
+            },
+            {
+              "_type": "UMLAssociation",
+              "_id": "E21BF212931942E6A54E",
+              "name": "typeAnimal",
+              "end1": {
+                "_type": "UMLAssociationEnd",
+                "_id": "3746FD28CC1D4E90B19E",
+                "reference": {
+                  "$ref": "ENT_ETAT_SANTE"
+                },
+                "multiplicity": "N"
+              },
+              "end2": {
+                "_type": "UMLAssociationEnd",
+                "_id": "F2B1B4FB8DA44E3BA71A",
+                "reference": {
+                  "$ref": "ENT_TYPE_ANIMAL"
+                },
+                "multiplicity": "1"
+              }
+            },
+            {
+              "_type": "UMLAssociation",
+              "_id": "193339CB0C904F4ABB8B",
+              "name": "",
+              "end1": {
+                "_type": "UMLAssociationEnd",
+                "_id": "BEC7EF506414443BB07F",
+                "reference": {
+                  "$ref": "ENT_DEPENSE"
+                },
+                "multiplicity": "N"
+              },
+              "end2": {
+                "_type": "UMLAssociationEnd",
+                "_id": "C65407D429394A79BA31",
+                "reference": {
+                  "$ref": "ENT_ANIMAL"
+                },
+                "multiplicity": "0..1"
+              }
+            }
+          ]
+        },
+        {
+          "_type": "UMLPackage",
+          "_id": "7A01F1A8045A471DAED1",
+          "name": "Détail Flutter Mobile",
+          "ownedElements": [
+            {
+              "_type": "UMLPackage",
+              "_id": "BC31FD20185D4DD19596",
+              "name": "Flutter App",
+              "ownedElements": [
+                {
+                  "_type": "UMLPackage",
+                  "_id": "C5688CAAE0FE439590D4",
+                  "name": "Presentation Layer",
+                  "ownedElements": [
+                    {
+                      "_type": "UMLComponent",
+                      "_id": "07C95BA0E5E14494898C",
+                      "name": "Screens (12 écrans)",
+                      "documentation": "login, home, reproductions, sante, alimentation\nfinances, alertes, ventes, depenses, predictions..."
+                    },
+                    {
+                      "_type": "UMLComponent",
+                      "_id": "4C30D108ED6B4447AC93",
+                      "name": "Providers (11 providers)",
+                      "documentation": "AuthProvider, DashboardProvider, AnimauxProvider\nReproductionsProvider, SanteProvider\nAlimentationProvider, FinanceProvider\nAlertesProvider, VentesProvider, DepensesProvider\nPredictionsProvider — ChangeNotifier pattern"
+                    },
+                    {
+                      "_type": "UMLComponent",
+                      "_id": "7DA316B8A57F4537A433",
+                      "name": "Widgets partagés"
+                    }
+                  ]
+                },
+                {
+                  "_type": "UMLPackage",
+                  "_id": "DC9234D1D62146A59E60",
+                  "name": "Data Layer",
+                  "ownedElements": [
+                    {
+                      "_type": "UMLComponent",
+                      "_id": "91136C6397D34372BE8D",
+                      "name": "Repositories (11)",
+                      "documentation": "Couche d'abstraction API\n→ animaux, reproductions, sante, alimentation\n   finance, alertes, ventes, depenses, predictions..."
+                    },
+                    {
+                      "_type": "UMLComponent",
+                      "_id": "BB755B70C0DB4E1B8DFB",
+                      "name": "Services HTTP",
+                      "documentation": "ApiService (Spring :8080) — JWT Bearer\nPythonApiService (Python :8000) — no auth"
+                    },
+                    {
+                      "_type": "UMLComponent",
+                      "_id": "E846A3F65FE24C2F8893",
+                      "name": "Models (11 fichiers)",
+                      "documentation": "animal, reproduction, sante, alimentation\nfinance, alerte, vente, depense, prediction\nauth, dashboard"
+                    },
+                    {
+                      "_type": "UMLComponent",
+                      "_id": "B1699ACFCDD142E4A77D",
+                      "name": "SecureStorage",
+                      "documentation": "flutter_secure_storage\nStocke: token JWT, role, username"
+                    }
+                  ]
+                },
+                {
+                  "_type": "UMLPackage",
+                  "_id": "1BE0BD1E5D1D4AA38841",
+                  "name": "Core",
+                  "ownedElements": [
+                    {
+                      "_type": "UMLComponent",
+                      "_id": "EE23873F47CA41ACB1DF",
+                      "name": "AppConstants (endpoints)"
+                    },
+                    {
+                      "_type": "UMLComponent",
+                      "_id": "7B39D9C621E14B1297F8",
+                      "name": "AppRouter (GoRouter)"
+                    },
+                    {
+                      "_type": "UMLComponent",
+                      "_id": "8570B287ABBE4054ADF1",
+                      "name": "AppTheme (FarmColors)"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "_type": "UMLPackage",
+          "_id": "4B40C742D5F942A1A908",
+          "name": "Détail Python FastAPI",
+          "ownedElements": [
+            {
+              "_type": "UMLPackage",
+              "_id": "56EDE6EE41D446CC9921",
+              "name": "Python FastAPI",
+              "ownedElements": [
+                {
+                  "_type": "UMLPackage",
+                  "_id": "E91813C786B54E68AE15",
+                  "name": "Routers (9 modules)",
+                  "ownedElements": [
+                    {
+                      "_type": "UMLComponent",
+                      "_id": "BC84AFF803BB466EAC7A",
+                      "name": "/api/predict, /api/predict/future",
+                      "documentation": "Prix porcs — XGBoost"
+                    },
+                    {
+                      "_type": "UMLComponent",
+                      "_id": "573835BBA3764AA5A7CA",
+                      "name": "/api/predict/aliment, /api/predict/aliment/future",
+                      "documentation": "Prix aliments — XGBoost"
+                    },
+                    {
+                      "_type": "UMLComponent",
+                      "_id": "CB12C97B4ECC4962867E",
+                      "name": "/api/advisor/alerts",
+                      "documentation": "Alertes: reproduction + boxes"
+                    },
+                    {
+                      "_type": "UMLComponent",
+                      "_id": "19449EAFF2A44FF38322",
+                      "name": "/api/kpi/raw, /api/kpi/analyse, /api/kpi/question",
+                      "documentation": "KPIs + Gemini LLM"
+                    },
+                    {
+                      "_type": "UMLComponent",
+                      "_id": "E16D48BCEE774F3AADEC",
+                      "name": "/api/stats, /api/trends, /api/evolution",
+                      "documentation": "Statistiques prix"
+                    },
+                    {
+                      "_type": "UMLComponent",
+                      "_id": "61356D75B0A1401094A4",
+                      "name": "/api/aliments/*, /api/aliments/recent",
+                      "documentation": "Consultation prix aliments"
+                    },
+                    {
+                      "_type": "UMLComponent",
+                      "_id": "ADAABD8DD8454DC4A359",
+                      "name": "/expenses/*, /expenses/stats/summary",
+                      "documentation": "CRUD Dépenses"
+                    },
+                    {
+                      "_type": "UMLComponent",
+                      "_id": "721924AE51CF41018DD8",
+                      "name": "/api/extract, /api/extractions",
+                      "documentation": "Extraction fichiers"
+                    },
+                    {
+                      "_type": "UMLComponent",
+                      "_id": "2BA4BE0C97A446DA98D2",
+                      "name": "/webhook/whatsapp",
+                      "documentation": "Webhook messages éleveurs"
+                    }
+                  ]
+                },
+                {
+                  "_type": "UMLPackage",
+                  "_id": "FFC0A2D2AAC144F9B1ED",
+                  "name": "Services Métier",
+                  "ownedElements": [
+                    {
+                      "_type": "UMLComponent",
+                      "_id": "AE796668614D4B9680A6",
+                      "name": "GeminiPriceExtractor",
+                      "documentation": "gemini-2.5-flash\nExtraction NLP prix depuis messages"
+                    },
+                    {
+                      "_type": "UMLComponent",
+                      "_id": "D42F769EC31545DF97B1",
+                      "name": "FarmAdvisor",
+                      "documentation": "gather_alerts()\nAlertes reproduction + capacité boxes"
+                    },
+                    {
+                      "_type": "UMLComponent",
+                      "_id": "034CAC928D774331A0D4",
+                      "name": "KpiAdvisor",
+                      "documentation": "collect_kpis() — 20+ KPIs\nanalyse_kpis() → Gemini"
+                    },
+                    {
+                      "_type": "UMLComponent",
+                      "_id": "E9E333A03A97468E8DEC",
+                      "name": "PricePredictor",
+                      "documentation": "xgboost_model.pkl\nPrix porcs sur pied"
+                    },
+                    {
+                      "_type": "UMLComponent",
+                      "_id": "9C935B59C06841529B47",
+                      "name": "AlimentPredictor",
+                      "documentation": "xgboost_aliments.pkl\nPrix aliments (maïs, soja...)"
+                    },
+                    {
+                      "_type": "UMLComponent",
+                      "_id": "EF31924544204A48A85E",
+                      "name": "TrendAnalyzer",
+                      "documentation": "Analyse tendances prix"
+                    },
+                    {
+                      "_type": "UMLComponent",
+                      "_id": "15F92A8441DC44268355",
+                      "name": "ExtractionWorkflow",
+                      "documentation": "Pipeline: messages → extract → validate → persist"
+                    },
+                    {
+                      "_type": "UMLComponent",
+                      "_id": "C4237A88A06448F4979C",
+                      "name": "AnomalyDetector",
+                      "documentation": "Détection prix aberrants"
+                    }
+                  ]
+                },
+                {
+                  "_type": "UMLPackage",
+                  "_id": "6D83B67E764E45CFB32B",
+                  "name": "ML Pipeline",
+                  "ownedElements": [
+                    {
+                      "_type": "UMLComponent",
+                      "_id": "6BC0497119E249B091FE",
+                      "name": "features.py / aliment_features.py",
+                      "documentation": "Feature engineering (type, date, saison)"
+                    },
+                    {
+                      "_type": "UMLComponent",
+                      "_id": "9CC3031C878C487D9A94",
+                      "name": "trainer.py / aliment_trainer.py",
+                      "documentation": "Entraînement XGBoost"
+                    },
+                    {
+                      "_type": "UMLComponent",
+                      "_id": "00329A33D54248BCAEDA",
+                      "name": "models/xgboost_model.pkl",
+                      "documentation": "Modèle prix porcs"
+                    },
+                    {
+                      "_type": "UMLComponent",
+                      "_id": "1A317BC189B2498F9E40",
+                      "name": "models/xgboost_aliments.pkl",
+                      "documentation": "Modèle prix aliments"
+                    }
+                  ]
+                },
+                {
+                  "_type": "UMLPackage",
+                  "_id": "5E2033C6115441E7A8DF",
+                  "name": "Database (SQLAlchemy)",
+                  "ownedElements": [
+                    {
+                      "_type": "UMLComponent",
+                      "_id": "3AEB2B429AAB4F12BE42",
+                      "name": "prix_extraits",
+                      "documentation": "Messages WhatsApp extraits"
+                    },
+                    {
+                      "_type": "UMLComponent",
+                      "_id": "84EACBFA85CB4F0CAB01",
+                      "name": "prix_aliments",
+                      "documentation": "Prix historiques aliments"
+                    },
+                    {
+                      "_type": "UMLComponent",
+                      "_id": "8828B0F272D643E083BE",
+                      "name": "predictions",
+                      "documentation": "Cache prédictions"
+                    },
+                    {
+                      "_type": "UMLComponent",
+                      "_id": "ADFE3DC44B9747BF8657",
+                      "name": "depense + type_depense",
+                      "documentation": "Charges Python"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "_type": "UMLPackage",
+          "_id": "36FE180561B44EF0BE8E",
+          "name": "Détail Spring Boot",
+          "ownedElements": [
+            {
+              "_type": "UMLPackage",
+              "_id": "DF434BDC96AB4282B605",
+              "name": "Spring Boot Backend (Kotlin)",
+              "ownedElements": [
+                {
+                  "_type": "UMLPackage",
+                  "_id": "8DE72943437F485AB85A",
+                  "name": "Security",
+                  "ownedElements": [
+                    {
+                      "_type": "UMLComponent",
+                      "_id": "821CCB26C50149B6B4C5",
+                      "name": "JwtUtil",
+                      "documentation": "HMAC-SHA key\nextractUsername(), validateToken()"
+                    },
+                    {
+                      "_type": "UMLComponent",
+                      "_id": "F16DDAC9ED48472CBA29",
+                      "name": "JwtAuthenticationFilter",
+                      "documentation": "OncePerRequestFilter\nBearer token extraction"
+                    },
+                    {
+                      "_type": "UMLComponent",
+                      "_id": "20855A16F405481FB28A",
+                      "name": "CustomUserDetailsService",
+                      "documentation": "loadUserByUsername(email)"
+                    },
+                    {
+                      "_type": "UMLComponent",
+                      "_id": "8EF2E502E7DC42198B89",
+                      "name": "SecurityConfig",
+                      "documentation": "CORS: localhost:4200\nCSRF: disabled\nStateless sessions"
+                    },
+                    {
+                      "_type": "UMLComponent",
+                      "_id": "3AE064B308DB4FE4B9E6",
+                      "name": "DataInitializer",
+                      "documentation": "@PostConstruct\nRôles: ADMIN, GESTIONNAIRE, DEMANDEUR, APPROBATEUR\nAdmin par défaut: admin@farm.com / admin12345"
+                    }
+                  ]
+                },
+                {
+                  "_type": "UMLPackage",
+                  "_id": "89B42D420B4E4CBFBCA3",
+                  "name": "Controllers (25 endpoints)",
+                  "ownedElements": [
+                    {
+                      "_type": "UMLComponent",
+                      "_id": "0F5BAE0C164141D7B7C2",
+                      "name": "/login — POST",
+                      "documentation": "AuthController → JWT token"
+                    },
+                    {
+                      "_type": "UMLComponent",
+                      "_id": "B8A527D6A5F140D88226",
+                      "name": "/api/animaux",
+                      "documentation": "CRUD + count-by-type + upload photo"
+                    },
+                    {
+                      "_type": "UMLComponent",
+                      "_id": "4F9A654A0B8242949A6E",
+                      "name": "/api/reproductions",
+                      "documentation": "CRUD + stats + alertes + ISSF + truie/verrat"
+                    },
+                    {
+                      "_type": "UMLComponent",
+                      "_id": "ECAD11EEEBF24796BC31",
+                      "name": "/api/pesees",
+                      "documentation": "POST + GET by animal + GMQ calculé"
+                    },
+                    {
+                      "_type": "UMLComponent",
+                      "_id": "51BDFBF8A7534B9CAF90",
+                      "name": "/api/soins",
+                      "documentation": "POST (individuel/collectif) + GET"
+                    },
+                    {
+                      "_type": "UMLComponent",
+                      "_id": "A44207B099DB47A3B41D",
+                      "name": "/api/alimentations",
+                      "documentation": "CRUD + ration-reference + calculer-cout"
+                    },
+                    {
+                      "_type": "UMLComponent",
+                      "_id": "29E7F9643B4445F090B4",
+                      "name": "/api/ventes",
+                      "documentation": "CRUD + facture PDF"
+                    },
+                    {
+                      "_type": "UMLComponent",
+                      "_id": "2A5D9C433F1F4F5FA316",
+                      "name": "/api/depense",
+                      "documentation": "CRUD Spring (parallèle Python)"
+                    },
+                    {
+                      "_type": "UMLComponent",
+                      "_id": "62A0DD1C06244384A013",
+                      "name": "/api/synthese",
+                      "documentation": "GET: totalVentes + totalCharges + beneficeNet"
+                    },
+                    {
+                      "_type": "UMLComponent",
+                      "_id": "59B349D95CCF49CDA5C4",
+                      "name": "/api/admin/*",
+                      "documentation": "ADMIN ONLY: users + roles CRUD"
+                    },
+                    {
+                      "_type": "UMLComponent",
+                      "_id": "2F2BBBC267174738846F",
+                      "name": "/api/settings",
+                      "documentation": "ADMIN: logo, configuration app"
+                    }
+                  ]
+                },
+                {
+                  "_type": "UMLPackage",
+                  "_id": "5C1E31D7F7804FABB525",
+                  "name": "Services & Repositories (JPA)",
+                  "ownedElements": [
+                    {
+                      "_type": "UMLComponent",
+                      "_id": "74F16AE22E834590AAF2",
+                      "name": "25+ Repositories JPA",
+                      "documentation": "Extends JpaRepository\nPostgreSQL: snackboost_db:5432"
+                    },
+                    {
+                      "_type": "UMLComponent",
+                      "_id": "A4EA510C0E174EF48E90",
+                      "name": "Services métier",
+                      "documentation": "countAnimalsByType(), suggestRation(stade)\ncalculerCoutRation(), getReproStats()"
+                    }
+                  ]
+                },
+                {
+                  "_type": "UMLPackage",
+                  "_id": "912B3EC2D1EC4530ABEF",
+                  "name": "Upload (Multipart)",
+                  "ownedElements": [
+                    {
+                      "_type": "UMLComponent",
+                      "_id": "C1F21C43EC0C4300BBC8",
+                      "name": "Logos /uploads/logos",
+                      "documentation": "max 5MB"
+                    },
+                    {
+                      "_type": "UMLComponent",
+                      "_id": "38B25C01A82442B299BB",
+                      "name": "Photos animaux /uploads/animaux",
+                      "documentation": "max 5MB"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "_type": "UMLPackage",
+          "_id": "22FF571790BF435EA956",
+          "name": "Détail Angular Frontend",
+          "ownedElements": [
+            {
+              "_type": "UMLPackage",
+              "_id": "B210B75ACA8541C2B258",
+              "name": "Angular Frontend",
+              "ownedElements": [
+                {
+                  "_type": "UMLPackage",
+                  "_id": "D1E19E465C754341AB84",
+                  "name": "Core (@core)",
+                  "ownedElements": [
+                    {
+                      "_type": "UMLComponent",
+                      "_id": "DDEC263DFF18456CAFE6",
+                      "name": "AuthService",
+                      "documentation": "JWT localStorage\nBehaviorSubject<LoginResponse>"
+                    },
+                    {
+                      "_type": "UMLComponent",
+                      "_id": "3757DEF6A1E54DDBA6F0",
+                      "name": "AuthInterceptor",
+                      "documentation": "HttpInterceptorFn\nAjoute 'Authorization: Bearer token'"
+                    },
+                    {
+                      "_type": "UMLComponent",
+                      "_id": "A92002406F7D4BFCA964",
+                      "name": "AuthGuard",
+                      "documentation": "Vérifie token non expiré"
+                    },
+                    {
+                      "_type": "UMLComponent",
+                      "_id": "7C2113D00678478FBCC6",
+                      "name": "50+ Services Angular",
+                      "documentation": "animal, reproduction, soin, alimentation\nvente, depense, kpi, prediction...\nTwo backends: :8080 + :8000"
+                    }
+                  ]
+                },
+                {
+                  "_type": "UMLPackage",
+                  "_id": "9FA7F62A816A468C8357",
+                  "name": "Pages Features (23 modules)",
+                  "ownedElements": [
+                    {
+                      "_type": "UMLComponent",
+                      "_id": "51632B539AB447FB914D",
+                      "name": "Admin (utilisateurs, rôles)"
+                    },
+                    {
+                      "_type": "UMLComponent",
+                      "_id": "9D6A1E6EBBF34424BD91",
+                      "name": "Élevage (animaux, fiches, déplacements)"
+                    },
+                    {
+                      "_type": "UMLComponent",
+                      "_id": "94B8AC5F5F0E4C97B052",
+                      "name": "Reproduction (suivi-reproduction)"
+                    },
+                    {
+                      "_type": "UMLComponent",
+                      "_id": "27100F3FDEA646338278",
+                      "name": "Santé & Soins"
+                    },
+                    {
+                      "_type": "UMLComponent",
+                      "_id": "52A0AFC7EB894374B8E6",
+                      "name": "Alimentation"
+                    },
+                    {
+                      "_type": "UMLComponent",
+                      "_id": "6D8482380D344343A8E2",
+                      "name": "Ventes"
+                    },
+                    {
+                      "_type": "UMLComponent",
+                      "_id": "4C301E03178E41ACAA80",
+                      "name": "Finances (synthèses, charges)"
+                    },
+                    {
+                      "_type": "UMLComponent",
+                      "_id": "08642D41F52149288CEB",
+                      "name": "SAD / KPI / Prédictions / IA"
+                    },
+                    {
+                      "_type": "UMLComponent",
+                      "_id": "2828D6B3057E468C8ED7",
+                      "name": "Projets / Budgets (gestion projets)"
+                    }
+                  ]
+                },
+                {
+                  "_type": "UMLPackage",
+                  "_id": "E0605CB5337345DABD40",
+                  "name": "Infrastructure",
+                  "ownedElements": [
+                    {
+                      "_type": "UMLComponent",
+                      "_id": "FFB747008E374F9EA2AC",
+                      "name": "Nginx (production)",
+                      "documentation": "nginx.conf + Dockerfile\nSert le build Angular"
+                    },
+                    {
+                      "_type": "UMLComponent",
+                      "_id": "81B77DBDC97649F29345",
+                      "name": "Proxy Dev",
+                      "documentation": "proxy.conf.json\n/api → localhost:8080\n/obf → localhost:8080"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

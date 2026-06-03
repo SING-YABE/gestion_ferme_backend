@@ -1,0 +1,62 @@
+Ce sur quoi l'IA se base pour répondre
+Architecture en 3 étapes
+Étape 1 — Collecte des données réelles de ton élevage
+Quand tu poses une question (ex. "Pourquoi mon taux de prolificité est-il bas ?"), le système ne répond pas de mémoire. Il interroge d'abord ta base de données PostgreSQL en temps réel. Il calcule une vingtaine de KPI sur les 12 derniers mois :
+* Reproduction : prolificité, ISSF, portées/truie/an, mortalité porcelets, taux de fertilité
+* Croissance : GMQ, indice de consommation (IC), poids moyen à la vente
+* Économie : coût aliment/kg, marge brute par porc, CA total, CA par truie/an
+* Santé : taux de morbidité, consommation médicaments, actes vétérinaires
+* Gestion : taux d'occupation des bâtiments, PPTA (porcs produits/truie/an)
+Ces valeurs viennent des tables reproduction, pesee, alimentation, ingredient_alimentation, vente, soin_animal, box — des données que l'éleveur a lui-même saisies.
+Étape 2 — Construction d'un prompt contextualisé
+Ces KPI sont ensuite mis en forme dans un prompt structuré qui est envoyé au LLM (Google Gemini). Ce prompt contient trois éléments :
+1. Les valeurs réelles calculées (ex. prolificité = 6,2 porcelets)
+2. Les références officielles burkinabè : fiches techniques DGPA/MRAH 2021 + ONG Thamani Bobo-Dioulasso (ex. prolificité cible ≥ 8, ISSF ≤ 7 jours, GMQ 400–600 g/jour)
+3. La question de l'éleveur telle qu'il l'a posée
+Étape 3 — Analyse et réponse par le LLM
+Gemini Flash reçoit ce prompt et répond en comparant les valeurs réelles aux références. Il explique l'écart, identifie la cause probable dans le contexte local (saison sèche, alimentation à base de drèche de dolo, etc.) et propose des actions concrètes adaptées aux ressources disponibles au Burkina Faso.
+
+Ce que l'IA n'invente pas
+* Les chiffres viennent de la BDD, pas du LLM
+* Les normes de référence sont codées dans le prompt (DGPA/MRAH 2021)
+* Le LLM ne fait que interpréter et contextualiser ces données
+Ce que l'IA ne peut pas faire
+* Si une donnée n'est pas saisie dans la BDD, elle répond "Non disponible" et ignore ce KPI
+* Elle ne prédit pas l'avenir (ce rôle est couvert par un module ML séparé basé sur Prophet, pour les prix)
+
+En une phrase pour le jury : "L'IA ne répond pas à partir de connaissances générales — elle lit les données réelles de l'exploitation, les compare aux normes locales DGPA/MRAH, puis demande à Gemini d'expliquer les écarts et de recommander des actions adaptées au contexte burkinabè."
+REPRODUCTION
+Taux mise bas (88.9%) ? Sur 100 saillies, 89 ont abouti à une naissance réelle
+Prolificité (7.3 nés) ? En moyenne 7.3 porcelets nés vivants par portée
+Portées/truie/an (2.7) ? Chaque truie fait 2.7 portées par an
+Mortalité porcelet (14.5%) ? 14.5% des porcelets meurent avant le sevrage
+ISSF (—) ? Nombre de jours entre le sevrage et la prochaine saillie fécondante (pas de données)
+
+CROISSANCE & PRODUCTION
+GMQ 394 g/j ? Tes porcs prennent 394g de poids par jour en moyenne
+IC (—) ? Kg d'aliment nécessaire pour faire 1 kg de poids (pas de données)
+Poids moyen vente (84.4 kg) ? Tes porcs pèsent 84kg en moyenne quand tu les vends
+Mortalité globale (0.0%) ? Aucun animal adulte mort sur la période
+Âge à la vente (203j) ? Tes porcs sont vendus à 203 jours (~6.7 mois)
+
+RENTABILITÉ
+Coût/kg aliment (118 F/kg) ? Tu paies 118 FCFA pour chaque kg de nourriture achetée
+Coût prod./kg (65 F/kg) ? Il te coûte 65 FCFA pour produire 1 kg de porc vendu (aliment + soins)
+Marge brute/porc (45,122 F) ? Ce que tu gagnes par porc vendu après avoir soustrait aliment + soins
+CA total (253,200 F) ? Total de toutes tes ventes sur 12 mois
+CA/truie/an (84,400 F) ? Ce qu'une truie te rapporte en ventes sur un an
+Porcs vendus (5) ? Tu as vendu 5 porcs sur les 12 derniers mois
+
+GESTION
+Taux occupation (34.4%) ? Seulement 34% de tes places en box sont occupées — sous-exploitation des bâtiments
+PPTA (19.3) ? 19.3 porcs produits par truie par an
+Durée cycle (203j) ? De la naissance à la vente : 203 jours
+
+SANTÉ ANIMALE
+Taux morbidité (0.0%) ? Aucun animal classé "malade" actuellement
+Médicaments (5,000 F) ? Total dépensé en soins vétérinaires sur 12 mois (1 acte, 1 animal traité)
+Animaux actifs (22) ? Tu as 22 animaux actuellement dans l'exploitation
+
+La règle 100 F/kg
+Vient de l'ONG Thamani, Bobo-Dioulasso : prix vente porc = 600 FCFA/kg ? l'aliment ne doit pas dépasser 1/6 = 100 FCFA/kg. Toi tu es à 118 ? "Trop cher".
+
