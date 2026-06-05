@@ -170,6 +170,21 @@ class TacheServiceImpl(
         return toAssignationDTO(assignationRepo.save(assignation))
     }
 
+    override fun uploadAudioInstruction(tacheId: Long, file: MultipartFile): String {
+        val tache = tacheRepo.findById(tacheId).orElseThrow { IllegalArgumentException("Tache $tacheId introuvable") }
+
+        val dir = Paths.get(tachesUploadDir)
+        if (!Files.exists(dir)) Files.createDirectories(dir)
+
+        // Remplace l'audio précédent si existant
+        val filename = "audio_task_${tacheId}.m4a"
+        file.transferTo(dir.resolve(filename).toFile())
+
+        tache.audioInstructionUrl = "/uploads/taches/$filename"
+        tacheRepo.save(tache)
+        return tache.audioInstructionUrl!!
+    }
+
     override fun uploadPreuve(assignationId: Long, file: MultipartFile, userEmail: String): PreuveTacheDTO {
         val assignation = getAssignation(assignationId)
         verifierAssignee(assignation, userEmail)
@@ -285,6 +300,7 @@ class TacheServiceImpl(
             priorite = tache.priorite, dateEcheance = tache.dateEcheance,
             recurrence = tache.recurrence, joursRecurrence = tache.joursRecurrence,
             batiment = tache.batiment, box = tache.box, notes = tache.notes,
+            audioInstructionUrl = tache.audioInstructionUrl,
             createur = tache.createur?.let { toUserLight(it) },
             dateCreation = tache.dateCreation,
             assignations = assignations.map { toAssignationDTO(it) },

@@ -55,6 +55,13 @@ data class Tache(
     @Column(columnDefinition = "TEXT")
     var notes: String? = null,
 
+    /**
+     * URL de l'audio d'instruction enregistré par le responsable (optionnel).
+     * Permet de transmettre la tâche oralement en langue locale (Dioula, Mooré…).
+     */
+    @Column
+    var audioInstructionUrl: String? = null,
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "createur_id", nullable = false)
     var createur: Utilisateur? = null,

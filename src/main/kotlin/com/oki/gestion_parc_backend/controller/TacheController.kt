@@ -64,6 +64,17 @@ class TacheController(private val service: TacheService,
     @PreAuthorize("hasAuthority('TACHE_READ_OWN')")
     fun get(@PathVariable id: Long) = service.getTache(id)
 
+    /**
+     * Upload de l'audio d'instruction (optionnel — langue locale Dioula, Mooré…).
+     * Réservé au responsable/créateur de la tâche.
+     */
+    @PostMapping("/{id}/audio", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
+    @PreAuthorize("hasAuthority('TACHE_CREATE')")
+    fun uploadAudioInstruction(
+        @PathVariable id: Long,
+        @RequestParam("file") file: MultipartFile
+    ) = mapOf("audioUrl" to service.uploadAudioInstruction(id, file))
+
     // ── Vues Admin/Gérant ─────────────────────────────────────────────────────
 
     @GetMapping("/admin/aujourd-hui")

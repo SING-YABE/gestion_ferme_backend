@@ -63,6 +63,8 @@ class SecurityConfig(
                     .requestMatchers("/login").permitAll()
                     // Fichiers uploadés accessibles sans token (images de preuves, logos…)
                     .requestMatchers("/uploads/**").permitAll()
+                    // Appelé en lecture seule par le service Python (FastAPI) sans session utilisateur
+                    .requestMatchers("/api/parametres-eleveur").permitAll()
                     // Toutes les autres routes nécessitent un token JWT valide.
                     // Les contrôles fins (quel rôle/permission) sont dans @PreAuthorize.
                     .anyRequest().authenticated()

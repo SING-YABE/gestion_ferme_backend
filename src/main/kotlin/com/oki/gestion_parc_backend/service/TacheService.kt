@@ -39,6 +39,10 @@ interface TacheService {
     /** Stats globales */
     fun stats(): TacheStatsDTO
 
+    // ── Audio instruction (optionnel — langue locale) ─────────────────────────
+    /** Upload ou remplacement de l'audio d'instruction d'une tâche (responsable) */
+    fun uploadAudioInstruction(tacheId: Long, file: MultipartFile): String
+
     // ── Actions ouvrier ───────────────────────────────────────────────────────
     fun demarrer(assignationId: Long, userEmail: String): AssignationTacheDTO
     fun soumettre(assignationId: Long, dto: SoumettreDTO, userEmail: String): AssignationTacheDTO

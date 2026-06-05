@@ -70,6 +70,8 @@ data class TacheResponseDTO(
     val batiment: String?,
     val box: String?,
     val notes: String?,
+    /** URL audio d'instruction en langue locale (optionnel) */
+    val audioInstructionUrl: String?,
     val createur: UtilisateurLightDTO?,
     val dateCreation: LocalDateTime,
     val assignations: List<AssignationTacheDTO>,
