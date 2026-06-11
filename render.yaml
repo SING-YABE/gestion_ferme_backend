@@ -1,0 +1,21 @@
+services:
+  # ── Web Service (backend Kotlin) ──────────────────────────────────────────
+  - type: web
+    name: gestion-parc-backend
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: gestion-parc-db
+          property: connectionString
+      - key: UPLOAD_DIR
+        value: /app/uploads
+
+# ── Base de données PostgreSQL ─────────────────────────────────────────────
+databases:
+  - name: gestion-parc-db
+    plan: free
+    databaseName: snackboost_db
+    user: postgres
