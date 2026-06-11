@@ -14,7 +14,7 @@ data class LoginResponse(val token: String, val role: String?, val username: Str
 
 @RestController
 @RequestMapping("/login")
-@CrossOrigin(origins = ["http://localhost:4200"])
+@CrossOrigin(origins = ["*"])
 class LoginController(
     private val authenticationManager: AuthenticationManager,
     private val userDetailsService: CustomUserDetailsService,
@@ -28,7 +28,9 @@ class LoginController(
             authenticationManager.authenticate(authToken)
 
             val userDetails: UserDetails = userDetailsService.loadUserByUsername(request.email)
-            val role = userDetails.authorities.firstOrNull()?.authority
+            val role = userDetails.authorities
+                .map { it.authority }
+                .firstOrNull { it.startsWith("ROLE_") }
             val jwt = jwtUtil.generateToken(userDetails)
 
             ResponseEntity.ok(LoginResponse(jwt, role, userDetails.username))
