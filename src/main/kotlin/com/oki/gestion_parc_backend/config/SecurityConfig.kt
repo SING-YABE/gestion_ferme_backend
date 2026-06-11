@@ -60,7 +60,7 @@ class SecurityConfig(
             .authorizeHttpRequests { auth ->
                 auth
                     // Routes publiques
-                    .requestMatchers("/login").permitAll()
+                    .requestMatchers("/login", "/health").permitAll()
                     // Fichiers uploadés accessibles sans token (images de preuves, logos…)
                     .requestMatchers("/uploads/**").permitAll()
                     // Appelé en lecture seule par le service Python (FastAPI) sans session utilisateur
