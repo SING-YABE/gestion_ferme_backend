@@ -37,14 +37,25 @@ class HealthController(private val dataSource: DataSource) {
             rsTables.close()
             result["ferme_default_tables"] = tables
 
-            // ── 3. Compter les utilisateurs si la table existe ────────────────
+            // ── 3. Inspecter les utilisateurs si la table existe ─────────────
             if (tables.contains("utilisateurs")) {
+                conn.createStatement().execute("""SET search_path TO "ferme_default", public""")
                 conn.createStatement().use { stmt ->
-                    conn.createStatement().execute("""SET search_path TO "ferme_default", public""")
                     val rsCount = stmt.executeQuery("SELECT COUNT(*) FROM utilisateurs")
                     if (rsCount.next()) result["utilisateurs_count"] = rsCount.getLong(1)
                     rsCount.close()
                 }
+                // Liste emails + début du hash pour vérifier l'encodage
+                val users = mutableListOf<String>()
+                conn.createStatement().use { stmt ->
+                    val rsUsers = stmt.executeQuery(
+                        "SELECT email, LEFT(password, 7) as pwd_prefix FROM utilisateurs"
+                    )
+                    while (rsUsers.next())
+                        users.add("${rsUsers.getString(1)} | pwd_prefix=${rsUsers.getString(2)}")
+                    rsUsers.close()
+                }
+                result["utilisateurs"] = users
             } else {
                 result["utilisateurs_count"] = "TABLE DOES NOT EXIST"
             }
