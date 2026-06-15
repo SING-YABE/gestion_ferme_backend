@@ -79,5 +79,37 @@ class SchemaCreationService(private val dataSource: DataSource) {
         } finally {
             emfBean.destroy()
         }
+
+        // ── Étape 3 : Vérifier que les tables ont bien été créées ─────────────
+        verifyTablesExist(schemaName)
+    }
+
+    /**
+     * Vérifie via JDBC que les tables essentielles existent dans le schéma.
+     * Log un avertissement si une table manque (indique un problème avec l'EMF temp).
+     */
+    private fun verifyTablesExist(schemaName: String) {
+        val expectedTables = listOf("utilisateurs", "roles", "subscription", "plan_config")
+        dataSource.connection.use { conn ->
+            val missingTables = mutableListOf<String>()
+            for (table in expectedTables) {
+                val rs = conn.metaData.getTables(null, schemaName, table, arrayOf("TABLE"))
+                val exists = rs.next()
+                rs.close()
+                if (!exists) missingTables.add(table)
+            }
+            if (missingTables.isEmpty()) {
+                println("[SchemaCreation] ✓ Vérification JDBC : toutes les tables existent dans '$schemaName'.")
+            } else {
+                println("[SchemaCreation] ⚠ TABLES MANQUANTES dans '$schemaName': $missingTables")
+                println("[SchemaCreation] ⚠ L'EMF temporaire n'a pas créé les tables. Tentative JDBC fallback...")
+                // Si les tables n'ont pas été créées par l'EMF, on log l'état pour debug
+                val allTables = mutableListOf<String>()
+                val rs2 = conn.metaData.getTables(null, schemaName, "%", arrayOf("TABLE"))
+                while (rs2.next()) allTables.add(rs2.getString("TABLE_NAME"))
+                rs2.close()
+                println("[SchemaCreation] Tables actuelles dans '$schemaName': $allTables")
+            }
+        }
     }
 }

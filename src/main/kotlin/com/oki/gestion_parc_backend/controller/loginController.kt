@@ -51,6 +51,9 @@ class LoginController(
                     foundSchema = tenant.schemaName
                     break
                 }
+            } catch (e: Exception) {
+                // Schéma ou table potentiellement absent — on skip ce tenant et on log
+                println("[LoginController] ⚠ Erreur lors de la recherche dans '${tenant.schemaName}': ${e.message}")
             } finally {
                 TenantContext.clear()
             }
