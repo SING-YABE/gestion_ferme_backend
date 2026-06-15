@@ -66,6 +66,12 @@ class SchemaCreationService(private val dataSource: DataSource) {
                 set("hibernate.default_schema",  schemaName)
                 set("hibernate.show_sql",        "false")
                 set("hibernate.format_sql",      "false")
+                // IMPORTANT : même naming strategy que le main EMF Spring Boot
+                // Sans ça, idRole → "idrole" au lieu de "id_role"
+                set("hibernate.physical_naming_strategy",
+                    "org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy")
+                set("hibernate.implicit_naming_strategy",
+                    "org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy")
             })
         }
 
