@@ -7,7 +7,8 @@ import jakarta.persistence.*
 open class Utilisateur(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    open var idUtilisateur: Long = 0L, // cohérent avec Role.idRole
+    @Column(name = "idutilisateur")
+    open var idUtilisateur: Long = 0L,
 
     @Column(nullable = false)
     open var poste: String = "",
