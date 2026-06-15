@@ -7,6 +7,7 @@ import com.oki.gestion_parc_backend.service.SchemaCreationService
 import jakarta.annotation.PostConstruct
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Component
+import javax.sql.DataSource
 
 /**
  * Initialisation des données au démarrage — version multi-tenant.
@@ -35,11 +36,17 @@ class DataInitializer(
     private val subscriptionRepository: SubscriptionRepository,
     private val planConfigRepository: PlanConfigRepository,
     private val tenantRepository: TenantRepository,
-    private val schemaCreationService: SchemaCreationService
+    private val schemaCreationService: SchemaCreationService,
+    private val dataSource: DataSource
 ) {
 
     @PostConstruct
     fun init() {
+        // ── Étape 0 : Supprimer ferme_default si colonnes avec ancien nommage ─
+        // ddl-auto=update ne renomme pas les colonnes → conflit NOT NULL.
+        // On détecte via "datedebut" (ancien) vs "date_debut" (nouveau).
+        dropSchemaIfLegacyNaming("ferme_default")
+
         // ── Étape 1 : Créer le schéma + toutes les tables ────────────────────
         schemaCreationService.initializeSchema("ferme_default")
 
@@ -113,6 +120,28 @@ class DataInitializer(
                 typeTacheRepository.save(type)
         }
         println("[DataInitializer] Types de tâches initialisés dans ferme_default.")
+    }
+
+    /**
+     * Supprime le schéma s'il a été créé avec l'ancien nommage (sans underscore).
+     * Détection : colonne "datedebut" dans subscription → ancien nommage.
+     * Sans underscore = SchemaCreationService sans CamelCaseToUnderscoresNamingStrategy.
+     * Idempotent : sans effet si schéma absent ou déjà correct.
+     */
+    private fun dropSchemaIfLegacyNaming(schemaName: String) {
+        try {
+            dataSource.connection.use { conn ->
+                val rs = conn.metaData.getColumns(null, schemaName, "subscription", "datedebut")
+                val isLegacy = rs.next()
+                rs.close()
+                if (isLegacy) {
+                    conn.createStatement().execute("""DROP SCHEMA IF EXISTS "$schemaName" CASCADE""")
+                    println("[DataInitializer] ✓ Schéma '$schemaName' (nommage legacy) supprimé.")
+                }
+            }
+        } catch (e: Exception) {
+            println("[DataInitializer] ⚠ Vérification nommage échouée : ${e.message}")
+        }
     }
 
     private fun initSubscription() {
