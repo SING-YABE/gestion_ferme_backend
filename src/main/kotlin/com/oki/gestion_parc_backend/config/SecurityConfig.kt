@@ -60,7 +60,7 @@ class SecurityConfig(
             .authorizeHttpRequests { auth ->
                 auth
                     // Routes publiques
-                    .requestMatchers("/login", "/health", "/health/debug").permitAll()
+                    .requestMatchers("/login", "/health", "/health/debug", "/health/test-login").permitAll()
                     // Inscription d'une nouvelle ferme (SaaS) — sans token
                     .requestMatchers("/api/register-ferme").permitAll()
                     // Validation du token d'invitation — sans JWT (lien email)
