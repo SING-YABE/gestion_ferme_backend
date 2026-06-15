@@ -7,6 +7,7 @@ import com.oki.gestion_parc_backend.service.SchemaCreationService
 import jakarta.annotation.PostConstruct
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Component
+import javax.sql.DataSource
 
 /**
  * Initialisation des données au démarrage — version multi-tenant.
@@ -36,11 +37,18 @@ class DataInitializer(
     private val subscriptionRepository: SubscriptionRepository,
     private val planConfigRepository: PlanConfigRepository,
     private val tenantRepository: TenantRepository,
-    private val schemaCreationService: SchemaCreationService
+    private val schemaCreationService: SchemaCreationService,
+    private val dataSource: DataSource
 ) {
 
     @PostConstruct
     fun init() {
+        // ── Étape 0 : Supprimer le schéma legacy si colonnes incompatibles ────
+        // Doit tourner AVANT toute query JPA (avant SchemaCreationService).
+        // Détecte si ferme_default a l'ancienne colonne "idrole" (sans underscore)
+        // et supprime le schéma pour qu'il soit recréé proprement.
+        dropLegacySchemaIfNeeded("ferme_default")
+
         // ── Étape 1 : Créer le schéma + toutes les tables ────────────────────
         schemaCreationService.initializeSchema("ferme_default")
 
@@ -124,6 +132,31 @@ class DataInitializer(
         if (!planConfigRepository.existsById(1L)) {
             planConfigRepository.save(PlanConfig(maxAnimauxFreePlan = 5))
             println("[DataInitializer] PlanConfig initialisée : limite = 5 animaux.")
+        }
+    }
+
+    /**
+     * Supprime le schéma s'il contient l'ancienne colonne "idrole" (sans underscore).
+     * SchemaCreationService le recrée ensuite avec le bon nommage "id_role".
+     * Idempotent : sans effet si le schéma n'existe pas ou a déjà les bons noms.
+     */
+    private fun dropLegacySchemaIfNeeded(schemaName: String) {
+        try {
+            dataSource.connection.use { conn ->
+                val rs = conn.metaData.getColumns(null, schemaName, "roles", "idrole")
+                val hasLegacyColumn = rs.next()
+                rs.close()
+                if (hasLegacyColumn) {
+                    conn.createStatement().execute(
+                        """DROP SCHEMA IF EXISTS "$schemaName" CASCADE"""
+                    )
+                    println("[DataInitializer] ✓ Schéma legacy '$schemaName' (colonne idrole) supprimé — sera recréé proprement.")
+                } else {
+                    println("[DataInitializer] ℹ Schéma '$schemaName' OK ou absent — rien à nettoyer.")
+                }
+            }
+        } catch (e: Exception) {
+            println("[DataInitializer] ⚠ Vérification legacy échouée pour '$schemaName' : ${e.message}")
         }
     }
 }
