@@ -7,7 +7,6 @@ import jakarta.persistence.*
 open class Utilisateur(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "idutilisateur")
     open var idUtilisateur: Long = 0L,
 
     @Column(nullable = false)
