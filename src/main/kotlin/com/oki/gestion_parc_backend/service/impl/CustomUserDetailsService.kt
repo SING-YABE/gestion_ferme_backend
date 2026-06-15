@@ -11,7 +11,6 @@ import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Service
-import jakarta.annotation.PostConstruct
 
 /**
  * Chargement des détails utilisateur pour Spring Security.
@@ -65,14 +64,4 @@ class CustomUserDetailsService(
         return User(utilisateur.email, utilisateur.password, authorities)
     }
 
-    /** Ré-encode les mots de passe en clair présents en base. À retirer après migration. */
-    @PostConstruct
-    fun encodeOldPasswords() {
-        utilisateurRepo.findAll().forEach { user ->
-            if (!user.password.startsWith("\$2a\$")) {
-                user.password = passwordEncoder.encode(user.password)
-                utilisateurRepo.save(user)
-            }
-        }
-    }
 }
