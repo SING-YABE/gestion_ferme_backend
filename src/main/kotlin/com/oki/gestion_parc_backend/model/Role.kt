@@ -8,7 +8,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 data class Role(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "idrole")
     val idRole: Long = 0,
 
     @Column(nullable = false, unique = true)
