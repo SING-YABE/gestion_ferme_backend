@@ -116,4 +116,7 @@ enum class Permission {
     TACHE_COMPLETE,      // démarrer, soumettre + upload preuves (ouvrier)
     TACHE_VALIDATE,      // valider / invalider (gérant/admin)
     TYPE_TACHE_MANAGE,   // CRUD des types de tâches (admin/gérant)
+
+    // ─── Abonnement SaaS ───────────────────────────────────────────────────────
+    SUBSCRIPTION_MANAGE, // voir et modifier plan + limites (administrateur uniquement)
 }

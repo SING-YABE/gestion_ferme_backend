@@ -9,6 +9,7 @@ import com.oki.gestion_parc_backend.repository.BoxRepository
 import com.oki.gestion_parc_backend.repository.EtatSanteRepository
 import com.oki.gestion_parc_backend.repository.TypeAnimalRepository
 import com.oki.gestion_parc_backend.service.AnimalService
+import com.oki.gestion_parc_backend.service.SubscriptionService
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
@@ -20,13 +21,21 @@ class AnimalServiceImpl(
     private val animalRepository: AnimalRepository,
     private val typeAnimalRepository: TypeAnimalRepository,
     private val boxRepository: BoxRepository,
-    private val etatSanteRepository: EtatSanteRepository
+    private val etatSanteRepository: EtatSanteRepository,
+    private val subscriptionService: SubscriptionService
 ) : AnimalService {
 
     private val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
 
     @Transactional
     override fun creerAnimal(dto: AnimalDTO): AnimalResponseDTO {
+
+        // ── Vérification limite SaaS ────────────────────────────────────────────
+        if (subscriptionService.isPlanFreeAndLimitAtteinte()) {
+            throw IllegalStateException(
+                "Limite du plan FREE atteinte. Passez au plan PRO pour ajouter plus d'animaux."
+            )
+        }
 
         val typeAnimal = typeAnimalRepository.findById(dto.typeAnimalId)
             .orElseThrow { IllegalArgumentException("TypeAnimal avec id ${dto.typeAnimalId} non trouvé") }

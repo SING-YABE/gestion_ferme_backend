@@ -61,6 +61,10 @@ class SecurityConfig(
                 auth
                     // Routes publiques
                     .requestMatchers("/login", "/health").permitAll()
+                    // Inscription d'une nouvelle ferme (SaaS) — sans token
+                    .requestMatchers("/api/register-ferme").permitAll()
+                    // Validation du token d'invitation — sans JWT (lien email)
+                    .requestMatchers("/api/invitations/validate").permitAll()
                     // Fichiers uploadés accessibles sans token (images de preuves, logos…)
                     .requestMatchers("/uploads/**").permitAll()
                     // Appelé en lecture seule par le service Python (FastAPI) sans session utilisateur

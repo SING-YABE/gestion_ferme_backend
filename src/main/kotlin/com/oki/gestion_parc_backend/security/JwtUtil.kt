@@ -35,16 +35,25 @@ class JwtUtil {
         return exp?.before(Date()) ?: true
     }
 
-    fun generateToken(userDetails: UserDetails): String {
-        // Spring Security's User trie les authorities alphabétiquement,
-        // donc on cherche explicitement celle qui commence par ROLE_
+    /**
+     * Génère un token JWT incluant le rôle ET le schéma du tenant.
+     * Le schéma est extrait à chaque requête par JwtAuthenticationFilter
+     * pour router les queries JPA vers le bon schéma PostgreSQL.
+     */
+    fun generateToken(userDetails: UserDetails, tenantSchema: String): String {
         val roleAuthority = userDetails.authorities
             .firstOrNull { it.authority.startsWith("ROLE_") }
             ?.authority ?: "ROLE_OUVRIER"
-        // On stocke le nom complet (ex: ROLE_GERANT) pour cohérence avec le frontend
-        val claims: Map<String, Any> = mapOf("role" to roleAuthority)
+        val claims: Map<String, Any> = mapOf(
+            "role"         to roleAuthority,
+            "tenantSchema" to tenantSchema
+        )
         return createToken(claims, userDetails.username)
     }
+
+    /** Extrait le schéma du tenant depuis le token JWT. */
+    fun extractTenantSchema(token: String): String? =
+        extractClaims(token)?.get("tenantSchema", String::class.java)
 
     private fun createToken(claims: Map<String, Any>, subject: String): String {
         val now = Date()

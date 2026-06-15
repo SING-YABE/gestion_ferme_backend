@@ -21,6 +21,9 @@ interface AnimalRepository : JpaRepository<Animal, Long> {
     fun findByVenduFalse(): List<Animal>
     fun countByBoxAndVenduFalse(box: Box): Long
 
+    /** Compte tous les animaux actifs (non vendus) — utilisé pour vérifier la limite FREE */
+    fun countByVenduFalse(): Long
+
 
 }
 
