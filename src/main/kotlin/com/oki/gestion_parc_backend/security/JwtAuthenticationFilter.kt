@@ -1,13 +1,16 @@
 package com.oki.gestion_parc_backend.security
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.oki.gestion_parc_backend.repository.SuperAdminRepository
 import com.oki.gestion_parc_backend.service.impl.CustomUserDetailsService
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.http.MediaType
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
+import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.context.SecurityContextHolder
+import org.springframework.security.core.userdetails.User
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource
 import org.springframework.stereotype.Component
 import org.springframework.web.filter.OncePerRequestFilter
@@ -27,7 +30,8 @@ import org.springframework.web.filter.OncePerRequestFilter
 @Component
 class JwtAuthenticationFilter(
     private val jwtUtil: JwtUtil,
-    private val userDetailsService: CustomUserDetailsService
+    private val userDetailsService: CustomUserDetailsService,
+    private val superAdminRepository: SuperAdminRepository
 ) : OncePerRequestFilter() {
 
     private val mapper = ObjectMapper()
@@ -55,21 +59,44 @@ class JwtAuthenticationFilter(
                 val tenantSchema = jwtUtil.extractTenantSchema(token) ?: "ferme_default"
 
                 if (username != null && SecurityContextHolder.getContext().authentication == null) {
-                    // ── Définir le tenant AVANT de charger l'utilisateur ──────
-                    TenantContext.setTenant(tenantSchema)
 
-                    val userDetails = userDetailsService.loadUserByUsername(username)
-
-                    if (jwtUtil.validateToken(token, userDetails)) {
-                        val authToken = UsernamePasswordAuthenticationToken(
-                            userDetails, null, userDetails.authorities
-                        )
-                        authToken.details = WebAuthenticationDetailsSource().buildDetails(request)
-                        SecurityContextHolder.getContext().authentication = authToken
+                    if (tenantSchema == "SUPER_ADMIN") {
+                        // ── Super Admin : pas de TenantContext, vérification dans public ──
+                        val sa = superAdminRepository.findByEmail(username)
+                        if (sa != null) {
+                            val authorities = listOf(SimpleGrantedAuthority("ROLE_SUPER_ADMIN"))
+                            val userDetails = User(sa.email, sa.password, authorities)
+                            if (jwtUtil.validateToken(token, userDetails)) {
+                                val authToken = UsernamePasswordAuthenticationToken(
+                                    userDetails, null, authorities
+                                )
+                                authToken.details = WebAuthenticationDetailsSource().buildDetails(request)
+                                SecurityContextHolder.getContext().authentication = authToken
+                            } else {
+                                sendUnauthorized(response, "Token expiré ou invalide.")
+                                return
+                            }
+                        } else {
+                            sendUnauthorized(response, "Super admin introuvable.")
+                            return
+                        }
                     } else {
-                        TenantContext.clear()
-                        sendUnauthorized(response, "Token expiré ou invalide. Veuillez vous reconnecter.")
-                        return
+                        // ── Utilisateur normal : définir le tenant AVANT de charger ──────
+                        TenantContext.setTenant(tenantSchema)
+
+                        val userDetails = userDetailsService.loadUserByUsername(username)
+
+                        if (jwtUtil.validateToken(token, userDetails)) {
+                            val authToken = UsernamePasswordAuthenticationToken(
+                                userDetails, null, userDetails.authorities
+                            )
+                            authToken.details = WebAuthenticationDetailsSource().buildDetails(request)
+                            SecurityContextHolder.getContext().authentication = authToken
+                        } else {
+                            TenantContext.clear()
+                            sendUnauthorized(response, "Token expiré ou invalide. Veuillez vous reconnecter.")
+                            return
+                        }
                     }
                 }
             } catch (e: Exception) {

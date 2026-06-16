@@ -89,7 +89,8 @@ class SchemaCreationService(private val dataSource: DataSource) {
      * Log un avertissement si une table manque (indique un problème avec l'EMF temp).
      */
     private fun verifyTablesExist(schemaName: String) {
-        val expectedTables = listOf("utilisateurs", "roles", "subscription", "plan_config")
+        // plan_config est dans public.plan_config (pas dans le schéma tenant)
+        val expectedTables = listOf("utilisateurs", "roles", "subscription")
         dataSource.connection.use { conn ->
             val missingTables = mutableListOf<String>()
             for (table in expectedTables) {

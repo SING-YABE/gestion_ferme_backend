@@ -1,5 +1,6 @@
 package com.oki.gestion_parc_backend.controller
 
+import com.oki.gestion_parc_backend.repository.SuperAdminRepository
 import com.oki.gestion_parc_backend.repository.TenantRepository
 import com.oki.gestion_parc_backend.repository.UtilisateurRepository
 import com.oki.gestion_parc_backend.security.JwtUtil
@@ -10,6 +11,7 @@ import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.AuthenticationException
 import org.springframework.security.core.userdetails.UserDetails
+import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.web.bind.annotation.*
 
 /** L'utilisateur n'envoie que son email et son mot de passe. */
@@ -34,11 +36,24 @@ class LoginController(
     private val userDetailsService: CustomUserDetailsService,
     private val jwtUtil: JwtUtil,
     private val tenantRepository: TenantRepository,
-    private val utilisateurRepository: UtilisateurRepository
+    private val utilisateurRepository: UtilisateurRepository,
+    private val superAdminRepository: SuperAdminRepository,
+    private val passwordEncoder: PasswordEncoder
 ) {
 
     @PostMapping
     fun login(@RequestBody request: LoginRequest): ResponseEntity<Any> {
+
+        // ── 0. Vérifier si c'est le Super Admin (public.super_admins) ─────────
+        // Pas de TenantContext — @Table(schema="public") route directement.
+        val superAdmin = superAdminRepository.findByEmail(request.email)
+        if (superAdmin != null) {
+            if (!passwordEncoder.matches(request.password, superAdmin.password)) {
+                return ResponseEntity.status(401).body(mapOf("error" to "Email ou mot de passe incorrect."))
+            }
+            val jwt = jwtUtil.generateSuperAdminToken(superAdmin.email)
+            return ResponseEntity.ok(LoginResponse(jwt, "ROLE_SUPER_ADMIN", superAdmin.email))
+        }
 
         // ── 1. Trouver la ferme qui contient cet email ────────────────────────
         val tenants = tenantRepository.findAllByActiveTrue()

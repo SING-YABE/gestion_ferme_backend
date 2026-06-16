@@ -12,19 +12,25 @@ import java.time.LocalDateTime
  *                          (défaut : 5 — configurable par l'admin sans redéploiement)
  *   - updatedAt          : horodatage de la dernière modification
  */
+/**
+ * IMPORTANT : stockée dans le schéma PUBLIC (pas dans le schéma tenant).
+ * Le Super Admin de la plateforme est le seul à modifier ces limites.
+ * Toutes les fermes lisent cette config commune via public.plan_config.
+ */
 @Entity
-@Table(name = "plan_config")
+@Table(name = "plan_config", schema = "public")
 class PlanConfig(
 
     @Id
     val id: Long = 1L,
 
-    /**
-     * Limite d'animaux actifs (non vendus) pour le plan FREE.
-     * Valeur -1 = illimité (ne pas utiliser en prod pour FREE).
-     */
+    /** Limite animaux actifs pour le plan FREE. */
     @Column(nullable = false)
     var maxAnimauxFreePlan: Int = 5,
+
+    /** Limite animaux actifs pour le plan PREMIUM (-1 = illimité). */
+    @Column(nullable = false)
+    var maxAnimauxPremiumPlan: Int = -1,
 
     @Column(nullable = false)
     var updatedAt: LocalDateTime = LocalDateTime.now()

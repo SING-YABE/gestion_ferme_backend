@@ -51,6 +51,18 @@ class JwtUtil {
         return createToken(claims, userDetails.username)
     }
 
+    /**
+     * Token JWT pour le Super Admin.
+     * tenantSchema = "SUPER_ADMIN" — valeur sentinelle reconnue par JwtAuthenticationFilter.
+     */
+    fun generateSuperAdminToken(email: String): String {
+        val claims: Map<String, Any> = mapOf(
+            "role"         to "ROLE_SUPER_ADMIN",
+            "tenantSchema" to "SUPER_ADMIN"
+        )
+        return createToken(claims, email)
+    }
+
     /** Extrait le schéma du tenant depuis le token JWT. */
     fun extractTenantSchema(token: String): String? =
         extractClaims(token)?.get("tenantSchema", String::class.java)

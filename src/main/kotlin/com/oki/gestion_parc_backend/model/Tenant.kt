@@ -37,7 +37,7 @@ class Tenant(
 
     /** Indique si le tenant est actif (soft-disable possible). */
     @Column(nullable = false)
-    val active: Boolean = true,
+    var active: Boolean = true,
 
     @Column(name = "created_at", nullable = false)
     val createdAt: LocalDateTime = LocalDateTime.now()

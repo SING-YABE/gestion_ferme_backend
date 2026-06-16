@@ -7,6 +7,7 @@ import com.oki.gestion_parc_backend.service.SchemaCreationService
 import jakarta.annotation.PostConstruct
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Component
+import java.time.LocalDateTime
 import javax.sql.DataSource
 
 /**
@@ -36,6 +37,7 @@ class DataInitializer(
     private val subscriptionRepository: SubscriptionRepository,
     private val planConfigRepository: PlanConfigRepository,
     private val tenantRepository: TenantRepository,
+    private val superAdminRepository: SuperAdminRepository,
     private val schemaCreationService: SchemaCreationService,
     private val dataSource: DataSource
 ) {
@@ -43,17 +45,19 @@ class DataInitializer(
     @PostConstruct
     fun init() {
         // ── Étape 0 : Supprimer ferme_default si colonnes avec ancien nommage ─
-        // ddl-auto=update ne renomme pas les colonnes → conflit NOT NULL.
-        // On détecte via "datedebut" (ancien) vs "date_debut" (nouveau).
         dropSchemaIfLegacyNaming("ferme_default")
 
         // ── Étape 1 : Créer le schéma + toutes les tables ────────────────────
+        // Crée aussi public.plan_config et public.super_admins (car @Table(schema="public"))
         schemaCreationService.initializeSchema("ferme_default")
 
-        // ── Étape 2 : Tenant par défaut dans public.tenants ──────────────────
+        // ── Étape 2 : Données schéma PUBLIC (sans TenantContext) ─────────────
+        initPublicData()
+
+        // ── Étape 3 : Tenant par défaut dans public.tenants ──────────────────
         initDefaultTenant()
 
-        // ── Étapes 3-4 : Données dans ferme_default ──────────────────────────
+        // ── Étapes 4-5 : Données dans ferme_default ──────────────────────────
         TenantContext.setTenant("ferme_default")
         try {
             initRolesEtUtilisateurs()
@@ -61,6 +65,33 @@ class DataInitializer(
             initSubscription()
         } finally {
             TenantContext.clear()
+        }
+    }
+
+    /**
+     * Initialise les données dans le schéma PUBLIC :
+     *   - PlanConfig (limites des plans — commune à toutes les fermes)
+     *   - SuperAdmin (compte propriétaire de la plateforme)
+     *
+     * Pas de TenantContext nécessaire car @Table(schema="public") est explicite.
+     */
+    private fun initPublicData() {
+        if (!planConfigRepository.existsById(1L)) {
+            planConfigRepository.save(PlanConfig(maxAnimauxFreePlan = 5, maxAnimauxPremiumPlan = -1))
+            println("[DataInitializer] PlanConfig initialisée dans public.plan_config (FREE=5, PREMIUM=illimité).")
+        }
+
+        if (superAdminRepository.findByEmail("superadmin@ferme.bf") == null) {
+            superAdminRepository.save(
+                SuperAdmin(
+                    email     = "superadmin@ferme.bf",
+                    password  = passwordEncoder.encode("SuperAdmin@2026!"),
+                    nom       = "Admin",
+                    prenom    = "Super",
+                    createdAt = LocalDateTime.now()
+                )
+            )
+            println("[DataInitializer] SuperAdmin créé : superadmin@ferme.bf / SuperAdmin@2026!")
         }
     }
 
@@ -147,11 +178,8 @@ class DataInitializer(
     private fun initSubscription() {
         if (!subscriptionRepository.existsById(1L)) {
             subscriptionRepository.save(Subscription())
-            println("[DataInitializer] Subscription FREE initialisée.")
+            println("[DataInitializer] Subscription FREE initialisée dans ferme_default.")
         }
-        if (!planConfigRepository.existsById(1L)) {
-            planConfigRepository.save(PlanConfig(maxAnimauxFreePlan = 5))
-            println("[DataInitializer] PlanConfig initialisée : limite = 5 animaux.")
-        }
+        // PlanConfig est dans public.plan_config — initialisée dans initPublicData()
     }
 }
