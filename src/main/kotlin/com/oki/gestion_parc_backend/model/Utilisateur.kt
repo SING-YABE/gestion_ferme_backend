@@ -31,6 +31,9 @@ open class Utilisateur(
     @JoinColumn(name = "role_id")
     open var role: Role? = null,
 
+    /** true = l'utilisateur doit changer son mot de passe à la prochaine connexion */
+    @Column(nullable = false)
+    open var mustChangePassword: Boolean = false,
 )
 
 
