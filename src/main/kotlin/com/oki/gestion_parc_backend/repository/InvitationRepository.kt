@@ -9,4 +9,5 @@ import org.springframework.data.jpa.repository.JpaRepository
  */
 interface InvitationRepository : JpaRepository<Invitation, Long> {
     fun findByToken(token: String): Invitation?
+    fun findByEmail(email: String): Invitation?
 }

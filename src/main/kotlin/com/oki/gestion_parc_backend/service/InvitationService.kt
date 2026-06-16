@@ -73,35 +73,55 @@ class InvitationService(
         val schemaName = TenantContext.getTenant()
             ?: throw IllegalStateException("Aucun tenant dans le contexte")
 
-        // Récupérer le nom de la ferme pour personnaliser l'email
         val tenant = tenantRepository.findAll().firstOrNull { it.schemaName == schemaName }
             ?: throw IllegalStateException("Tenant introuvable pour le schéma $schemaName")
-
-        // Vérifier que l'email n'existe pas déjà dans cette ferme
-        if (utilisateurRepository.findByEmail(req.email) != null) {
-            throw IllegalArgumentException("Un utilisateur avec cet email existe déjà dans cette ferme.")
-        }
 
         val role: Role = roleRepository.findById(req.roleId).orElseThrow {
             IllegalArgumentException("Rôle introuvable.")
         }
 
-        // Générer le token UUID
+        val existingUser = utilisateurRepository.findByEmail(req.email)
+        if (existingUser != null) {
+            val existingInvitation = invitationRepository.findByEmail(req.email)
+
+            // Compte déjà actif (invitation utilisée)
+            if (existingInvitation != null && existingInvitation.used) {
+                throw IllegalArgumentException("Cet utilisateur a déjà activé son compte.")
+            }
+
+            // Invitation en attente (email échoué ou expiré) → renouveler et renvoyer
+            if (existingInvitation != null && !existingInvitation.used) {
+                val newToken = UUID.randomUUID().toString().replace("-", "")
+                existingInvitation.token     = newToken
+                existingInvitation.expiresAt = LocalDateTime.now().plusHours(72)
+                invitationRepository.save(existingInvitation)
+                try {
+                    sendInvitationEmail(req.email, req.prenom, tenant.nomFerme, newToken)
+                } catch (e: Exception) {
+                    println("[InvitationService] ⚠ Échec renvoi email à ${req.email} : ${e.message}")
+                    throw IllegalStateException("Token renouvelé mais échec d'envoi d'email : ${e.message}")
+                }
+                return InvitationResult(newToken, "Invitation renvoyée à ${req.email}")
+            }
+
+            // Utilisateur orphelin sans invitation → nettoyer pour recréer proprement
+            utilisateurRepository.delete(existingUser)
+        }
+
+        // Créer l'utilisateur + l'invitation, puis envoyer l'email
         val token = UUID.randomUUID().toString().replace("-", "")
 
-        // Créer le compte utilisateur avec un mot de passe inutilisable (sera défini via l'invitation)
         val user = Utilisateur(
             prenom    = req.prenom,
             nom       = req.nom,
             email     = req.email,
             poste     = req.poste,
             telephone = req.telephone,
-            password  = passwordEncoder.encode("INVITATION_PENDING_$token"), // inutilisable directement
+            password  = passwordEncoder.encode("INVITATION_PENDING_$token"),
             role      = role
         )
-        utilisateurRepository.save(user)
+        val savedUser = utilisateurRepository.save(user)
 
-        // Sauvegarder l'invitation
         val invitation = Invitation(
             token      = token,
             email      = req.email,
@@ -112,10 +132,17 @@ class InvitationService(
             roleId     = req.roleId,
             expiresAt  = LocalDateTime.now().plusHours(72)
         )
-        invitationRepository.save(invitation)
+        val savedInvitation = invitationRepository.save(invitation)
 
-        // Envoyer l'email
-        sendInvitationEmail(req.email, req.prenom, tenant.nomFerme, token)
+        try {
+            sendInvitationEmail(req.email, req.prenom, tenant.nomFerme, token)
+        } catch (e: Exception) {
+            // Rollback manuel : supprimer user + invitation si l'email échoue
+            println("[InvitationService] ⚠ Échec envoi email à ${req.email} : ${e.message}")
+            invitationRepository.delete(savedInvitation)
+            utilisateurRepository.delete(savedUser)
+            throw IllegalStateException("Échec d'envoi d'email — aucune donnée sauvegardée. Vérifiez la config SMTP : ${e.message}")
+        }
 
         return InvitationResult(token, "Invitation envoyée à ${req.email}")
     }
@@ -197,44 +224,86 @@ class InvitationService(
     private fun buildEmailHtml(prenom: String, nomFerme: String, lien: String): String = """
         <!DOCTYPE html>
         <html lang="fr">
-        <body style="font-family: Arial, sans-serif; background: #f5f5f5; padding: 24px;">
-          <div style="max-width: 520px; margin: auto; background: #fff; border-radius: 10px; overflow: hidden;">
+        <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+        <body style="margin:0;padding:0;background-color:#f0f4f8;font-family:Arial,Helvetica,sans-serif;">
+          <table width="100%" cellpadding="0" cellspacing="0" style="background:#f0f4f8;padding:32px 16px;">
+            <tr><td align="center">
+              <table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
 
-            <div style="background: linear-gradient(135deg, #2d5016, #4a7c2c); padding: 28px 32px;">
-              <h1 style="color: #fff; margin: 0; font-size: 1.4rem;">🐷 Gestion Ferme</h1>
-            </div>
+                <!-- HEADER -->
+                <tr>
+                  <td style="background:linear-gradient(135deg,#1a3a0a 0%,#2d5016 50%,#3d6b1f 100%);padding:32px;text-align:center;">
+                    <table width="100%" cellpadding="0" cellspacing="0">
+                      <tr><td align="center">
+                        <!-- Logo circulaire -->
+                        <div style="display:inline-block;width:68px;height:68px;border-radius:50%;background:rgba(255,255,255,0.15);text-align:center;line-height:68px;margin-bottom:14px;">
+                          <img src="https://img.icons8.com/color/64/000000/barn.png"
+                               alt="Farm" width="44" height="44"
+                               style="vertical-align:middle;margin-top:12px;border-radius:4px;"
+                               onerror="this.style.display='none'"/>
+                        </div>
+                        <br/>
+                        <span style="color:#ffffff;font-size:22px;font-weight:bold;letter-spacing:1.5px;text-transform:uppercase;">Gestion Ferme</span>
+                        <br/>
+                        <span style="color:rgba(255,255,255,0.65);font-size:12px;letter-spacing:0.5px;">Plateforme d'élevage porcin — Burkina Faso</span>
+                      </td></tr>
+                    </table>
+                  </td>
+                </tr>
 
-            <div style="padding: 32px;">
-              <p style="font-size: 1rem; color: #374151;">Bonjour <strong>$prenom</strong>,</p>
-              <p style="color: #6b7280;">
-                Vous avez été invité(e) à rejoindre <strong>$nomFerme</strong> sur la plateforme de gestion d'élevage porcin.
-              </p>
-              <p style="color: #6b7280;">
-                Cliquez sur le bouton ci-dessous pour activer votre compte et définir votre mot de passe.
-                Ce lien est valable <strong>72 heures</strong>.
-              </p>
+                <!-- BODY -->
+                <tr>
+                  <td style="padding:36px 40px 24px;">
+                    <p style="font-size:16px;color:#1f2937;margin:0 0 8px;">
+                      Bonjour <strong style="color:#2d5016;">$prenom</strong>,
+                    </p>
+                    <p style="font-size:14px;color:#4b5563;line-height:1.6;margin:16px 0;">
+                      Vous avez été invité(e) à rejoindre
+                      <strong style="color:#1f2937;">$nomFerme</strong>
+                      sur notre plateforme de gestion d'élevage porcin.
+                    </p>
+                    <p style="font-size:14px;color:#4b5563;line-height:1.6;margin:0 0 28px;">
+                      Cliquez sur le bouton ci-dessous pour activer votre compte
+                      et définir votre mot de passe.
+                      Ce lien est valable <strong>72 heures</strong>.
+                    </p>
 
-              <div style="text-align: center; margin: 32px 0;">
-                <a href="$lien"
-                   style="background: #4a7c2c; color: #fff; text-decoration: none;
-                          padding: 14px 32px; border-radius: 8px; font-size: 1rem;
-                          font-weight: bold; display: inline-block;">
-                  Activer mon compte
-                </a>
-              </div>
+                    <!-- CTA BUTTON -->
+                    <table width="100%" cellpadding="0" cellspacing="0">
+                      <tr><td align="center" style="padding:8px 0 32px;">
+                        <a href="$lien"
+                           style="display:inline-block;background:linear-gradient(135deg,#2d5016,#4a7c2c);
+                                  color:#ffffff;text-decoration:none;padding:16px 40px;
+                                  border-radius:8px;font-size:15px;font-weight:bold;
+                                  letter-spacing:0.5px;box-shadow:0 4px 12px rgba(45,80,22,0.35);">
+                          ✅ Activer mon compte
+                        </a>
+                      </td></tr>
+                    </table>
 
-              <p style="font-size: 0.8rem; color: #9ca3af;">
-                Si vous n'attendiez pas cette invitation, ignorez simplement cet email.<br/>
-                Lien : <a href="$lien" style="color: #4a7c2c;">$lien</a>
-              </p>
-            </div>
+                    <!-- DIVIDER -->
+                    <hr style="border:none;border-top:1px solid #e5e7eb;margin:0 0 20px;"/>
 
-            <div style="background: #f9fafb; padding: 16px 32px; text-align: center;">
-              <p style="font-size: 0.75rem; color: #9ca3af; margin: 0;">
-                © 2025 Gestion Ferme — Burkina Faso
-              </p>
-            </div>
-          </div>
+                    <p style="font-size:12px;color:#9ca3af;line-height:1.5;margin:0;">
+                      Si vous n'attendiez pas cette invitation, ignorez simplement cet email.<br/>
+                      Ce lien expire automatiquement dans 72h et ne peut être utilisé qu'une seule fois.
+                    </p>
+                  </td>
+                </tr>
+
+                <!-- FOOTER -->
+                <tr>
+                  <td style="background:#f9fafb;border-top:1px solid #e5e7eb;padding:18px 40px;text-align:center;">
+                    <p style="font-size:11px;color:#9ca3af;margin:0;">
+                      © 2025 <strong>Gestion Ferme</strong> — Burkina Faso &nbsp;|&nbsp;
+                      Ce message est confidentiel et destiné uniquement à son destinataire.
+                    </p>
+                  </td>
+                </tr>
+
+              </table>
+            </td></tr>
+          </table>
         </body>
         </html>
     """.trimIndent()
