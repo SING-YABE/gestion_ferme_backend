@@ -19,7 +19,7 @@ class SuperAdmin(
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long = 0L,
+    val id: Long? = null,
 
     @Column(unique = true, nullable = false)
     val email: String = "",

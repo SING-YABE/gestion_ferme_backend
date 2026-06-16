@@ -3,6 +3,7 @@ package com.oki.gestion_parc_backend.controller
 import com.oki.gestion_parc_backend.model.PlanConfig
 import com.oki.gestion_parc_backend.repository.AnimalRepository
 import com.oki.gestion_parc_backend.repository.PlanConfigRepository
+import com.oki.gestion_parc_backend.repository.SuperAdminRepository
 import com.oki.gestion_parc_backend.repository.TenantRepository
 import com.oki.gestion_parc_backend.repository.UtilisateurRepository
 import com.oki.gestion_parc_backend.security.TenantContext
