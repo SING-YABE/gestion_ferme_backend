@@ -51,6 +51,9 @@ class DataInitializer(
         // Crée aussi public.plan_config et public.super_admins (car @Table(schema="public"))
         schemaCreationService.initializeSchema("ferme_default")
 
+        // ── Migration : ajouter must_change_password sur tous les schémas ────
+        migrateAddMustChangePassword()
+
         // ── Étape 2 : Données schéma PUBLIC (sans TenantContext) ─────────────
         initPublicData()
 
@@ -172,6 +175,38 @@ class DataInitializer(
             }
         } catch (e: Exception) {
             println("[DataInitializer] ⚠ Vérification nommage échouée : ${e.message}")
+        }
+    }
+
+    /**
+     * Migration idempotente : ajoute la colonne must_change_password à la table
+     * utilisateurs de TOUS les schémas tenant existants.
+     * Utilise ADD COLUMN IF NOT EXISTS → sans effet si la colonne existe déjà.
+     */
+    private fun migrateAddMustChangePassword() {
+        try {
+            dataSource.connection.use { conn ->
+                // Récupérer tous les schémas tenant (hors public, information_schema, pg_*)
+                val schemas = mutableListOf<String>()
+                val rs = conn.metaData.getSchemas()
+                while (rs.next()) {
+                    val schema = rs.getString("TABLE_SCHEM")
+                    if (!schema.startsWith("pg_") && schema != "information_schema" && schema != "public") {
+                        schemas.add(schema)
+                    }
+                }
+                rs.close()
+
+                schemas.forEach { schema ->
+                    conn.createStatement().execute(
+                        """ALTER TABLE IF EXISTS "$schema".utilisateurs
+                           ADD COLUMN IF NOT EXISTS must_change_password BOOLEAN NOT NULL DEFAULT FALSE"""
+                    )
+                    println("[DataInitializer] ✓ Migration must_change_password → schéma '$schema'")
+                }
+            }
+        } catch (e: Exception) {
+            println("[DataInitializer] ⚠ Migration must_change_password échouée : ${e.message}")
         }
     }
 
