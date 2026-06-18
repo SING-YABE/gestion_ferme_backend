@@ -8,6 +8,7 @@ import com.oki.gestion_parc_backend.service.SchemaCreationService
 import com.oki.gestion_parc_backend.service.TenantService
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
+import java.time.LocalDate
 
 /**
  * Implémentation du service de gestion des tenants.
@@ -126,8 +127,15 @@ class TenantServiceImpl(
     }
 
     private fun initSubscription() {
-        if (!subscriptionRepository.existsById(1L))
-            subscriptionRepository.save(Subscription())
+        // Crée un essai gratuit de 14 jours pour toute nouvelle ferme
+        if (!subscriptionRepository.existsById(1L)) {
+            subscriptionRepository.save(
+                Subscription(
+                    statut      = SubscriptionStatus.TRIAL,
+                    trialEndsAt = LocalDate.now().plusDays(14)
+                )
+            )
+        }
         if (!planConfigRepository.existsById(1L))
             planConfigRepository.save(PlanConfig(maxAnimauxFreePlan = 5))
     }

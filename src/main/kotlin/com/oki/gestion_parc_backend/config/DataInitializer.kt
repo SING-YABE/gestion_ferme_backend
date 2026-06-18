@@ -79,9 +79,43 @@ class DataInitializer(
      * Pas de TenantContext nécessaire car @Table(schema="public") est explicite.
      */
     private fun initPublicData() {
-        if (!planConfigRepository.existsById(1L)) {
-            planConfigRepository.save(PlanConfig(maxAnimauxFreePlan = 5, maxAnimauxPremiumPlan = -1))
-            println("[DataInitializer] PlanConfig initialisée dans public.plan_config (FREE=5, PREMIUM=illimité).")
+        if (planConfigRepository.count() == 0L) {
+            val now = LocalDateTime.now()
+            planConfigRepository.saveAll(listOf(
+                PlanConfig(
+                    nom = "STARTER", description = "Démarrage gratuit — idéal pour découvrir la plateforme.",
+                    prixFcfa = 0, dureeDays = 14, trialDays = 14,
+                    maxAnimaux = 10, maxUtilisateurs = 2, maxBatiments = 1,
+                    hasAssistantIA = false, hasAlertesSms = false,
+                    hasSyntheseComplete = false, hasExportPdf = false, hasPrevisionPrix = false,
+                    actif = true, ordre = 0, createdAt = now, updatedAt = now
+                ),
+                PlanConfig(
+                    nom = "ELEVEUR PRO", description = "Pour les éleveurs en croissance — assistant IA inclus.",
+                    prixFcfa = 5000, dureeDays = 30, trialDays = 0,
+                    maxAnimaux = 50, maxUtilisateurs = 5, maxBatiments = 5,
+                    hasAssistantIA = true, hasAlertesSms = false,
+                    hasSyntheseComplete = true, hasExportPdf = false, hasPrevisionPrix = false,
+                    actif = true, ordre = 1, createdAt = now, updatedAt = now
+                ),
+                PlanConfig(
+                    nom = "FERME PREMIUM", description = "Gestion complète avec alertes SMS et exports PDF.",
+                    prixFcfa = 15000, dureeDays = 90, trialDays = 0,
+                    maxAnimaux = 200, maxUtilisateurs = 15, maxBatiments = 20,
+                    hasAssistantIA = true, hasAlertesSms = true,
+                    hasSyntheseComplete = true, hasExportPdf = true, hasPrevisionPrix = false,
+                    actif = true, ordre = 2, createdAt = now, updatedAt = now
+                ),
+                PlanConfig(
+                    nom = "ENTREPRISE", description = "Illimité — pour les grandes exploitations porcines.",
+                    prixFcfa = 45000, dureeDays = 365, trialDays = 0,
+                    maxAnimaux = -1, maxUtilisateurs = -1, maxBatiments = -1,
+                    hasAssistantIA = true, hasAlertesSms = true,
+                    hasSyntheseComplete = true, hasExportPdf = true, hasPrevisionPrix = true,
+                    actif = true, ordre = 3, createdAt = now, updatedAt = now
+                )
+            ))
+            println("[DataInitializer] 4 plans PlanConfig créés dans public.plan_config.")
         }
 
         if (superAdminRepository.findByEmail("superadmin@ferme.bf") == null) {
@@ -210,11 +244,25 @@ class DataInitializer(
         }
     }
 
+    /**
+     * Initialise la subscription de la ferme en statut TRIAL.
+     * Le plan STARTER (trialDays=14) est utilisé par défaut.
+     * Idempotent : sans effet si une subscription existe déjà.
+     */
     private fun initSubscription() {
         if (!subscriptionRepository.existsById(1L)) {
-            subscriptionRepository.save(Subscription())
-            println("[DataInitializer] Subscription FREE initialisée dans ferme_default.")
+            // Récupérer le plan STARTER (premier plan avec trialDays > 0)
+            val planStarter = planConfigRepository.findByNom("STARTER")
+            val sub = Subscription(
+                planConfigId = planStarter?.id,
+                planNom      = planStarter?.nom ?: "STARTER",
+                statut       = com.oki.gestion_parc_backend.model.SubscriptionStatus.TRIAL,
+                trialEndsAt  = java.time.LocalDate.now().plusDays(
+                    planStarter?.trialDays?.toLong() ?: 14L
+                )
+            )
+            subscriptionRepository.save(sub)
+            println("[DataInitializer] Subscription TRIAL initialisée dans ferme_default (${sub.trialEndsAt}).")
         }
-        // PlanConfig est dans public.plan_config — initialisée dans initPublicData()
     }
 }

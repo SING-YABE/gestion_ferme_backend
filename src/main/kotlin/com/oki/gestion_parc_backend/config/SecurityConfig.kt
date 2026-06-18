@@ -69,6 +69,8 @@ class SecurityConfig(
                     .requestMatchers("/uploads/**").permitAll()
                     // Appelé en lecture seule par le service Python (FastAPI) sans session utilisateur
                     .requestMatchers("/api/parametres-eleveur").permitAll()
+                    // Liste des plans disponibles — accessible sans auth (écran de choix de plan)
+                    .requestMatchers("/api/plans").permitAll()
                     // Toutes les autres routes nécessitent un token JWT valide.
                     // Les contrôles fins (quel rôle/permission) sont dans @PreAuthorize.
                     .anyRequest().authenticated()

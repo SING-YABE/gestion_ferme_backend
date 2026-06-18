@@ -31,9 +31,9 @@ class AnimalServiceImpl(
     override fun creerAnimal(dto: AnimalDTO): AnimalResponseDTO {
 
         // ── Vérification limite SaaS ────────────────────────────────────────────
-        if (subscriptionService.isPlanFreeAndLimitAtteinte()) {
+        if (subscriptionService.isAnimalLimitAtteinte()) {
             throw IllegalStateException(
-                "Limite du plan FREE atteinte. Passez au plan PRO pour ajouter plus d'animaux."
+                "ANIMAL_LIMIT_REACHED: Limite d'animaux atteinte. Passez à un plan supérieur."
             )
         }
 

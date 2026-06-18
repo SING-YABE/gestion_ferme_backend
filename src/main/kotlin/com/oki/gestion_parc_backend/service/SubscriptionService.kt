@@ -1,26 +1,40 @@
 package com.oki.gestion_parc_backend.service
 
-import com.oki.gestion_parc_backend.dto.PlanConfigDTO
+import com.oki.gestion_parc_backend.dto.PlanPublicDTO
 import com.oki.gestion_parc_backend.dto.SubscriptionStatusDTO
-import com.oki.gestion_parc_backend.model.PlanConfig
 import com.oki.gestion_parc_backend.model.Subscription
 
 /**
- * Service gérant le plan d'abonnement de la ferme et ses limites.
+ * Service principal de gestion de l'abonnement de la ferme.
  *
- * Entrées / sorties de chaque méthode :
- *   getStatus()                  → DTO complet plan + limites + compteurs actuels
- *   getConfig()                  → entité PlanConfig (limites brutes)
- *   updateConfig(dto)            → PlanConfig mis à jour
- *   activatePro(notes)           → Subscription passée en PRO
- *   downgradeToFree()            → Subscription repassée en FREE
- *   isPlanFreeAndLimitAtteinte() → true si FREE et quota animaux atteint (pour bloc création)
+ * Méthodes :
+ *   getStatus()               → État complet abonnement + limites + features
+ *   getPlansPublics()         → Liste des plans actifs (pour l'écran de choix)
+ *   isAnimalLimitAtteinte()   → true si quota animaux atteint (bloc création)
+ *   isFeatureAllowed(feature) → true si la fonctionnalité est incluse dans le plan actuel
+ *   getOrCreateSubscription() → Subscription existante ou créée en TRIAL
  */
 interface SubscriptionService {
+
+    /** Retourne l'état complet de l'abonnement pour le frontend/mobile. */
     fun getStatus(): SubscriptionStatusDTO
-    fun getConfig(): PlanConfig
-    fun updateConfig(dto: PlanConfigDTO): PlanConfig
-    fun activatePro(notes: String?): Subscription
-    fun downgradeToFree(): Subscription
-    fun isPlanFreeAndLimitAtteinte(): Boolean
+
+    /** Liste des plans actifs pour l'écran public de sélection. */
+    fun getPlansPublics(): List<PlanPublicDTO>
+
+    /**
+     * Vérifie si le quota d'animaux du plan actuel est atteint.
+     * Utilisé dans AnimalServiceImpl avant chaque création d'animal.
+     * Retourne true → création bloquée (lever HTTP 402).
+     */
+    fun isAnimalLimitAtteinte(): Boolean
+
+    /**
+     * Vérifie si une fonctionnalité est incluse dans le plan actuel.
+     * @param feature une des constantes : "assistantIA", "exportPdf", "previsionPrix"...
+     */
+    fun isFeatureAllowed(feature: String): Boolean
+
+    /** Retourne la subscription existante ou en crée une TRIAL par défaut. */
+    fun getOrCreateSubscription(): Subscription
 }
