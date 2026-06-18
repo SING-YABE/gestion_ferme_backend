@@ -127,27 +127,20 @@ class TenantServiceImpl(
     }
 
     private fun initSubscription() {
-        // Crée un essai gratuit de 14 jours pour toute nouvelle ferme
+        // Crée un essai gratuit de 14 jours pour toute nouvelle ferme.
+        // Les plans (PlanConfig) sont gérés dans public.plan_config par DataInitializer — pas ici.
         if (!subscriptionRepository.existsById(1L)) {
+            val planStarter = planConfigRepository.findByNom("STARTER")
             subscriptionRepository.save(
                 Subscription(
-                    statut      = SubscriptionStatus.TRIAL,
-                    trialEndsAt = LocalDate.now().plusDays(14)
+                    planConfigId = planStarter?.id,
+                    planNom      = planStarter?.nom ?: "STARTER",
+                    statut       = SubscriptionStatus.TRIAL,
+                    trialEndsAt  = LocalDate.now().plusDays(
+                        planStarter?.trialDays?.toLong() ?: 14L
+                    )
                 )
             )
         }
-        if (!planConfigRepository.existsById(1L))
-            planConfigRepository.save(
-                PlanConfig(
-                    nom = "FREE",
-                    description = "Plan gratuit",
-                    prixFcfa = 0,
-                    dureeDays = 30,
-                    trialDays = 14,
-                    maxAnimaux = 5,
-                    maxUtilisateurs = 1,
-                    maxBatiments = 1
-                )
-            )
     }
 }

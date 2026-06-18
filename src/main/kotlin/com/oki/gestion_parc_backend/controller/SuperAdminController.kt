@@ -8,6 +8,7 @@ import com.oki.gestion_parc_backend.service.C0de4hopeService
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.context.SecurityContextHolder
+import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.*
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -155,8 +156,25 @@ class SuperAdminController(
     // ── Plans — CRUD ─────────────────────────────────────────────────────────
 
     @GetMapping("/plans")
-    fun getAllPlans(): ResponseEntity<List<PlanConfig>> =
-        ResponseEntity.ok(planConfigRepository.findAll().sortedBy { it.ordre })
+    @Transactional(readOnly = true)
+    fun getAllPlans(): ResponseEntity<Any> {
+        return try {
+            val plans = planConfigRepository.findAll().sortedBy { it.ordre }
+            println("[SuperAdmin] getAllPlans() → ${plans.size} plans trouvés")
+            ResponseEntity.ok(plans)
+        } catch (e: Exception) {
+            println("[SuperAdmin] ❌ getAllPlans() exception : ${e.javaClass.name} — ${e.message}")
+            e.printStackTrace()
+            ResponseEntity.status(500).body(
+                mapOf(
+                    "error"  to "Erreur lors du chargement des plans",
+                    "detail" to e.message,
+                    "cause"  to e.cause?.message,
+                    "type"   to e.javaClass.name
+                )
+            )
+        }
+    }
 
     @PostMapping("/plans")
     fun createPlan(@RequestBody dto: PlanConfigCreateDTO): ResponseEntity<Any> {
