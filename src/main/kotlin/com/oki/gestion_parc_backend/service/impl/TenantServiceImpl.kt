@@ -137,6 +137,17 @@ class TenantServiceImpl(
             )
         }
         if (!planConfigRepository.existsById(1L))
-            planConfigRepository.save(PlanConfig(maxAnimauxFreePlan = 5))
+            planConfigRepository.save(
+                PlanConfig(
+                    nom = "FREE",
+                    description = "Plan gratuit",
+                    prixFcfa = 0,
+                    dureeDays = 30,
+                    trialDays = 14,
+                    maxAnimaux = 5,
+                    maxUtilisateurs = 1,
+                    maxBatiments = 1
+                )
+            )
     }
 }
