@@ -50,7 +50,7 @@ class C0de4hopeService(
      */
     fun verifyPayment(phoneNumber: String, amount: Int, otp: String): PaymentVerificationResult {
         val endpoint = "$apiUrl/verifyotp"
-        val reqBody  = mapOf("number" to phoneNumber, "otp" to otp)
+        val reqBody  = mapOf("number" to phoneNumber, "amount" to amount, "otp" to otp)
         println("[C0de4hope] ▶ verifyPayment → POST $endpoint")
         println("[C0de4hope]   body : $reqBody")
 
