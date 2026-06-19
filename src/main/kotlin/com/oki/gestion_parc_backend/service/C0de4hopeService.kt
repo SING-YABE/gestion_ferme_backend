@@ -49,7 +49,7 @@ class C0de4hopeService(
      * En cas d'échec réseau : retourne ERROR avec le message d'exception.
      */
     fun verifyPayment(phoneNumber: String, amount: Int, otp: String): PaymentVerificationResult {
-        val endpoint = "$apiUrl/verifyotp"
+        val endpoint = "$apiUrl/auth/verify-otp"
         val reqBody  = mapOf("number" to phoneNumber, "amount" to amount, "otp" to otp)
         println("[C0de4hope] ▶ verifyPayment → POST $endpoint")
         println("[C0de4hope]   body : $reqBody")
