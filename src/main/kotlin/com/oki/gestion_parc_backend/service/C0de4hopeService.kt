@@ -49,8 +49,8 @@ class C0de4hopeService(
      * En cas d'échec réseau : retourne ERROR avec le message d'exception.
      */
     fun verifyPayment(phoneNumber: String, amount: Int, otp: String): PaymentVerificationResult {
-        val endpoint = "$apiUrl/auth/verify-otp"
-        val reqBody  = mapOf("number" to phoneNumber, "amount" to amount, "otp" to otp)
+        val endpoint = "$apiUrl/verifyotp"
+        val reqBody  = mapOf("number" to phoneNumber, "otp" to otp)
         println("[C0de4hope] ▶ verifyPayment → POST $endpoint")
         println("[C0de4hope]   body : $reqBody")
 
@@ -101,7 +101,8 @@ class C0de4hopeService(
             val headers = buildHeaders()
             val body = mapOf(
                 "to"      to phoneNumber,
-                "message" to message
+                "message" to message,
+                "otp"     to "—"
             )
             val entity = HttpEntity(body, headers)
 
@@ -114,13 +115,19 @@ class C0de4hopeService(
             val success = response.statusCode.is2xxSuccessful
             log.statut = if (success) SmsStatut.SENT else SmsStatut.FAILED
             if (!success) log.errorMessage = "HTTP ${response.statusCode}"
-            smsLogRepository.save(log)
+            println("[C0de4hope] sendSms → HTTP ${response.statusCode} | success=$success")
+            try { smsLogRepository.save(log) } catch (dbEx: Exception) {
+                println("[C0de4hope] ⚠ smsLogRepository.save échoué (non bloquant) : ${dbEx.message}")
+            }
             success
 
         } catch (ex: Exception) {
+            println("[C0de4hope] ❌ sendSms exception : ${ex.javaClass.simpleName} — ${ex.message}")
             log.statut       = SmsStatut.FAILED
             log.errorMessage = ex.message
-            smsLogRepository.save(log)
+            try { smsLogRepository.save(log) } catch (dbEx: Exception) {
+                println("[C0de4hope] ⚠ smsLogRepository.save (catch) échoué : ${dbEx.message}")
+            }
             false
         }
     }
@@ -129,7 +136,7 @@ class C0de4hopeService(
 
     private fun buildHeaders(): HttpHeaders = HttpHeaders().apply {
         contentType = MediaType.APPLICATION_JSON
-        set("Authorization", "Bearer $apiKey")
+        set("x-api-key", apiKey)
     }
 
     /**

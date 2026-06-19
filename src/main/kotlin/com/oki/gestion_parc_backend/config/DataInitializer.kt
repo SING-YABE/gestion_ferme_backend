@@ -55,8 +55,10 @@ class DataInitializer(
         // Crée aussi public.plan_config et public.super_admins (car @Table(schema="public"))
         schemaCreationService.initializeSchema("ferme_default")
 
-        // ── Migration : ajouter must_change_password sur tous les schémas ────
+        // ── Migrations schémas tenant ─────────────────────────────────────────
         migrateAddMustChangePassword()
+        migrateSubscriptionAddAutoRenew()
+        migrateCreatePaymentTables()
 
         // ── Étape 2 : Données schéma PUBLIC (sans TenantContext) ─────────────
         initPublicData()
@@ -285,6 +287,91 @@ class DataInitializer(
             }
         } catch (e: Exception) {
             println("[DataInitializer] ⚠ Migration must_change_password échouée : ${e.message}")
+        }
+    }
+
+    /**
+     * Migration idempotente : ajoute la colonne auto_renew à la table
+     * subscription de TOUS les schémas tenant existants.
+     * Ajoutée dans Phase 1A mais absente des schémas créés avant ce déploiement.
+     */
+    private fun migrateSubscriptionAddAutoRenew() {
+        try {
+            dataSource.connection.use { conn ->
+                val schemas = mutableListOf<String>()
+                val rs = conn.metaData.getSchemas()
+                while (rs.next()) {
+                    val schema = rs.getString("TABLE_SCHEM")
+                    if (!schema.startsWith("pg_") && schema != "information_schema" && schema != "public") {
+                        schemas.add(schema)
+                    }
+                }
+                rs.close()
+
+                schemas.forEach { schema ->
+                    conn.createStatement().execute(
+                        """ALTER TABLE IF EXISTS "$schema".subscription
+                           ADD COLUMN IF NOT EXISTS auto_renew BOOLEAN NOT NULL DEFAULT FALSE"""
+                    )
+                    println("[DataInitializer] ✓ Migration auto_renew → schéma '$schema'")
+                }
+            }
+        } catch (e: Exception) {
+            println("[DataInitializer] ⚠ Migration auto_renew échouée : ${e.message}")
+        }
+    }
+
+    /**
+     * Migration idempotente : crée les tables payment_transactions et sms_logs
+     * dans TOUS les schémas tenant existants.
+     * Ces tables sont créées à l'inscription des nouvelles fermes par initializeSchema(),
+     * mais absentes des schémas créés avant Phase 1B.
+     */
+    private fun migrateCreatePaymentTables() {
+        try {
+            dataSource.connection.use { conn ->
+                val schemas = mutableListOf<String>()
+                val rs = conn.metaData.getSchemas()
+                while (rs.next()) {
+                    val schema = rs.getString("TABLE_SCHEM")
+                    if (!schema.startsWith("pg_") && schema != "information_schema" && schema != "public") {
+                        schemas.add(schema)
+                    }
+                }
+                rs.close()
+
+                schemas.forEach { schema ->
+                    conn.createStatement().execute("""
+                        CREATE TABLE IF NOT EXISTS "$schema".payment_transactions (
+                            id              BIGSERIAL PRIMARY KEY,
+                            plan_config_id  BIGINT       NOT NULL,
+                            plan_nom        VARCHAR(255) NOT NULL,
+                            phone_number    VARCHAR(255) NOT NULL,
+                            montant_attendu INTEGER      NOT NULL,
+                            statut          VARCHAR(50)  NOT NULL,
+                            response_code   VARCHAR(255),
+                            response_message VARCHAR(500),
+                            created_at      TIMESTAMP    NOT NULL
+                        )
+                    """.trimIndent())
+
+                    conn.createStatement().execute("""
+                        CREATE TABLE IF NOT EXISTS "$schema".sms_logs (
+                            id           BIGSERIAL PRIMARY KEY,
+                            phone_number VARCHAR(255) NOT NULL,
+                            message      VARCHAR(500) NOT NULL,
+                            event        VARCHAR(50)  NOT NULL,
+                            statut       VARCHAR(50)  NOT NULL,
+                            error_message VARCHAR(500),
+                            created_at   TIMESTAMP    NOT NULL
+                        )
+                    """.trimIndent())
+
+                    println("[DataInitializer] ✓ Migration payment_transactions + sms_logs → schéma '$schema'")
+                }
+            }
+        } catch (e: Exception) {
+            println("[DataInitializer] ⚠ Migration payment tables échouée : ${e.message}")
         }
     }
 
