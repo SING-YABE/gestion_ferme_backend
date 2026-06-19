@@ -49,24 +49,23 @@ class C0de4hopeService(
      * En cas d'échec réseau : retourne ERROR avec le message d'exception.
      */
     fun verifyPayment(phoneNumber: String, amount: Int, otp: String): PaymentVerificationResult {
+        val endpoint = "$apiUrl/auth/verify-otp"
+        val reqBody  = mapOf("number" to phoneNumber, "amount" to amount, "otp" to otp)
+        println("[C0de4hope] ▶ verifyPayment → POST $endpoint")
+        println("[C0de4hope]   body : $reqBody")
+
         return try {
             val headers = buildHeaders()
-            val body = mapOf(
-                "number" to phoneNumber,
-                "amount" to amount,
-                "otp"    to otp
-            )
-            val entity = HttpEntity(body, headers)
+            val entity  = HttpEntity(reqBody, headers)
 
-            val response = restTemplate.postForEntity(
-                "$apiUrl/auth/verify-otp",
-                entity,
-                Map::class.java
-            )
+            val response = restTemplate.postForEntity(endpoint, entity, Map::class.java)
 
+            println("[C0de4hope] ◀ HTTP ${response.statusCode} | body : ${response.body}")
             parseVerifyResponse(response)
 
         } catch (ex: Exception) {
+            println("[C0de4hope] ❌ Exception : ${ex.javaClass.name} — ${ex.message}")
+            ex.printStackTrace()
             PaymentVerificationResult(
                 success       = false,
                 statut        = "ERROR",
@@ -135,8 +134,13 @@ class C0de4hopeService(
 
     /**
      * Interprète la réponse HTTP de /auth/verify-otp.
-     * La structure exacte de la réponse c0de4hope est :
-     *   { "status": "success"|"error", "code": "...", "message": "...", "refundAmount": null|Int }
+     *
+     * L'API c0de4hope peut retourner plusieurs formats :
+     *   Format A : { "status": "success"|"error", "code": "...", "message": "...", "refundAmount": null|Int }
+     *   Format B : { "success": true|false, "message": "...", "data": {...} }
+     *   Format C : { "code": "SUCCESS"|"OTP_INVALID"|..., "message": "..." }
+     *
+     * On tente de détecter le format et d'extraire les informations pertinentes.
      */
     private fun parseVerifyResponse(
         response: ResponseEntity<Map<*, *>>
@@ -144,21 +148,49 @@ class C0de4hopeService(
 
         val body = response.body ?: return PaymentVerificationResult(
             success = false, statut = "ERROR", message = "Réponse vide de c0de4hope"
-        )
+        ).also { println("[C0de4hope] ⚠ body null") }
 
-        val status  = body["status"]?.toString()?.uppercase() ?: "ERROR"
-        val code    = body["code"]?.toString() ?: status
-        val message = body["message"]?.toString() ?: ""
-        val refund  = (body["refundAmount"] as? Number)?.toInt()
+        println("[C0de4hope] parseVerify body keys : ${body.keys}")
 
-        val isSuccess = status == "SUCCESS" || code == "SUCCESS" ||
-                        code == "OVERPAID"   // OVERPAID = paiement valide, surplus remboursé
+        // --- Extraire les champs avec fallbacks multi-format ---
+        val statusRaw   = body["status"]?.toString()
+        val codeRaw     = body["code"]?.toString()
+        val successBool = body["success"]?.let {
+            it == true || it.toString().equals("true", ignoreCase = true)
+        }
+        val message     = body["message"]?.toString() ?: ""
+        val refund      = (body["refundAmount"] as? Number)?.toInt()
+            ?: (body["refund_amount"] as? Number)?.toInt()
+
+        // Normaliser le statut en majuscules
+        val statusUp = statusRaw?.uppercase()
+        val codeUp   = codeRaw?.uppercase()
+
+        println("[C0de4hope] status='$statusUp' code='$codeUp' success=$successBool message='$message'")
+
+        val isSuccess = when {
+            successBool == true                           -> true
+            statusUp == "SUCCESS" || statusUp == "OK"     -> true
+            codeUp == "SUCCESS" || codeUp == "OK"         -> true
+            codeUp == "OVERPAID"                          -> true
+            statusUp == "OVERPAID"                        -> true
+            // HTTP 200 sans champ statut = succès implicite
+            response.statusCode.is2xxSuccessful &&
+            statusUp == null && codeUp == null &&
+            successBool == null && message.isNotBlank()   -> true
+            else                                          -> false
+        }
+
+        // Statut canonique pour notre logique interne
+        val canonicalStatut = codeUp ?: statusUp ?: if (isSuccess) "SUCCESS" else "ERROR"
+
+        println("[C0de4hope] → isSuccess=$isSuccess statut='$canonicalStatut' refund=$refund")
 
         return PaymentVerificationResult(
             success      = isSuccess,
-            statut       = code,
+            statut       = canonicalStatut,
             message      = message,
-            responseCode = code,
+            responseCode = canonicalStatut,
             refundAmount = refund
         )
     }
