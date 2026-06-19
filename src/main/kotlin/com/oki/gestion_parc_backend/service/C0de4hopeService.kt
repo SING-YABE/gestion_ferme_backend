@@ -176,11 +176,12 @@ class C0de4hopeService(
         println("[C0de4hope] status='$statusUp' code='$codeUp' success=$successBool message='$message'")
 
         val isSuccess = when {
-            successBool == true                           -> true
-            statusUp == "SUCCESS" || statusUp == "OK"     -> true
-            codeUp == "SUCCESS" || codeUp == "OK"         -> true
-            codeUp == "OVERPAID"                          -> true
-            statusUp == "OVERPAID"                        -> true
+            successBool == true                                        -> true
+            statusUp == "SUCCESS" || statusUp == "OK"
+                || statusUp == "VERIFIED" || statusUp == "VERIFIED."  -> true
+            codeUp == "SUCCESS" || codeUp == "OK" || codeUp == "VERIFIED" -> true
+            codeUp == "OVERPAID"                                       -> true
+            statusUp == "OVERPAID"                                     -> true
             // HTTP 200 sans champ statut = succès implicite
             response.statusCode.is2xxSuccessful &&
             statusUp == null && codeUp == null &&
