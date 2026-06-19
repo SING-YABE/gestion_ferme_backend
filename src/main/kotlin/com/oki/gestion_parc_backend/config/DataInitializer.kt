@@ -51,6 +51,9 @@ class DataInitializer(
         // Crée aussi public.plan_config et public.super_admins (car @Table(schema="public"))
         schemaCreationService.initializeSchema("ferme_default")
 
+        // ── Migration : colonnes manquantes dans public.plan_config ─────────
+        migratePlanConfigSchema()
+
         // ── Migration : ajouter must_change_password sur tous les schémas ────
         migrateAddMustChangePassword()
 
@@ -209,6 +212,39 @@ class DataInitializer(
             }
         } catch (e: Exception) {
             println("[DataInitializer] ⚠ Vérification nommage échouée : ${e.message}")
+        }
+    }
+
+    /**
+     * Migration idempotente : ajoute les colonnes manquantes dans public.plan_config.
+     *
+     * Contexte : la table peut avoir été créée par un ancien déploiement avant l'ajout
+     * de certaines colonnes (actif, ordre, has_prevision_prix…).
+     * ddl-auto=none empêche Hibernate de la mettre à jour automatiquement.
+     *
+     * Utilise ADD COLUMN IF NOT EXISTS → sans effet si la colonne existe déjà.
+     */
+    private fun migratePlanConfigSchema() {
+        try {
+            dataSource.connection.use { conn ->
+                val migrations = listOf(
+                    "ALTER TABLE IF EXISTS public.plan_config ADD COLUMN IF NOT EXISTS actif BOOLEAN NOT NULL DEFAULT TRUE",
+                    "ALTER TABLE IF EXISTS public.plan_config ADD COLUMN IF NOT EXISTS ordre INT NOT NULL DEFAULT 0",
+                    "ALTER TABLE IF EXISTS public.plan_config ADD COLUMN IF NOT EXISTS has_prevision_prix BOOLEAN NOT NULL DEFAULT FALSE",
+                    "ALTER TABLE IF EXISTS public.plan_config ADD COLUMN IF NOT EXISTS created_at TIMESTAMP WITHOUT TIME ZONE",
+                    "ALTER TABLE IF EXISTS public.plan_config ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITHOUT TIME ZONE"
+                )
+                migrations.forEach { sql ->
+                    try {
+                        conn.createStatement().execute(sql)
+                    } catch (e: Exception) {
+                        println("[DataInitializer] ⚠ Migration plan_config colonne : ${e.message}")
+                    }
+                }
+                println("[DataInitializer] ✓ Migration public.plan_config terminée.")
+            }
+        } catch (e: Exception) {
+            println("[DataInitializer] ⚠ migratePlanConfigSchema échoué : ${e.message}")
         }
     }
 
