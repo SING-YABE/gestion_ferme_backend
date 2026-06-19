@@ -44,15 +44,16 @@ class DataInitializer(
 
     @PostConstruct
     fun init() {
-        // ── Étape 0 : Supprimer ferme_default si colonnes avec ancien nommage ─
+        // ── Étape 0a : Supprimer ferme_default si colonnes avec ancien nommage ─
         dropSchemaIfLegacyNaming("ferme_default")
+
+        // ── Étape 0b : Supprimer public.plan_config si schéma incomplet ──────
+        // Doit s'exécuter AVANT initializeSchema() pour que l'EMF recrée la table proprement.
+        dropPlanConfigIfIncomplete()
 
         // ── Étape 1 : Créer le schéma + toutes les tables ────────────────────
         // Crée aussi public.plan_config et public.super_admins (car @Table(schema="public"))
         schemaCreationService.initializeSchema("ferme_default")
-
-        // ── Migration : colonnes manquantes dans public.plan_config ─────────
-        migratePlanConfigSchema()
 
         // ── Migration : ajouter must_change_password sur tous les schémas ────
         migrateAddMustChangePassword()
@@ -216,35 +217,42 @@ class DataInitializer(
     }
 
     /**
-     * Migration idempotente : ajoute les colonnes manquantes dans public.plan_config.
+     * Détecte si public.plan_config a un schéma incomplet (colonnes manquantes dues à
+     * un ancien déploiement). Si c'est le cas, supprime la table pour qu'elle soit
+     * recréée proprement par schemaCreationService.initializeSchema().
      *
-     * Contexte : la table peut avoir été créée par un ancien déploiement avant l'ajout
-     * de certaines colonnes (actif, ordre, has_prevision_prix…).
-     * ddl-auto=none empêche Hibernate de la mettre à jour automatiquement.
+     * Détection : vérification de la colonne "duree_days" (absente dans l'ancien schéma).
+     * Idempotent : sans effet si la table n'existe pas ou si elle est déjà correcte.
      *
-     * Utilise ADD COLUMN IF NOT EXISTS → sans effet si la colonne existe déjà.
+     * ⚠ Doit être appelé AVANT initializeSchema() pour que l'EMF recrée la table.
      */
-    private fun migratePlanConfigSchema() {
+    private fun dropPlanConfigIfIncomplete() {
         try {
             dataSource.connection.use { conn ->
-                val migrations = listOf(
-                    "ALTER TABLE IF EXISTS public.plan_config ADD COLUMN IF NOT EXISTS actif BOOLEAN NOT NULL DEFAULT TRUE",
-                    "ALTER TABLE IF EXISTS public.plan_config ADD COLUMN IF NOT EXISTS ordre INT NOT NULL DEFAULT 0",
-                    "ALTER TABLE IF EXISTS public.plan_config ADD COLUMN IF NOT EXISTS has_prevision_prix BOOLEAN NOT NULL DEFAULT FALSE",
-                    "ALTER TABLE IF EXISTS public.plan_config ADD COLUMN IF NOT EXISTS created_at TIMESTAMP WITHOUT TIME ZONE",
-                    "ALTER TABLE IF EXISTS public.plan_config ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITHOUT TIME ZONE"
-                )
-                migrations.forEach { sql ->
-                    try {
-                        conn.createStatement().execute(sql)
-                    } catch (e: Exception) {
-                        println("[DataInitializer] ⚠ Migration plan_config colonne : ${e.message}")
-                    }
+                // Vérifier si la table existe
+                val tableRs = conn.metaData.getTables(null, "public", "plan_config", arrayOf("TABLE"))
+                val tableExists = tableRs.next()
+                tableRs.close()
+
+                if (!tableExists) {
+                    println("[DataInitializer] public.plan_config absente — sera créée par initializeSchema.")
+                    return
                 }
-                println("[DataInitializer] ✓ Migration public.plan_config terminée.")
+
+                // Vérifier si duree_days existe (colonne absente = schéma incomplet)
+                val colRs = conn.metaData.getColumns(null, "public", "plan_config", "duree_days")
+                val isComplete = colRs.next()
+                colRs.close()
+
+                if (!isComplete) {
+                    conn.createStatement().execute("DROP TABLE IF EXISTS public.plan_config CASCADE")
+                    println("[DataInitializer] ✓ public.plan_config (schéma incomplet) supprimée — sera recréée.")
+                } else {
+                    println("[DataInitializer] ✓ public.plan_config schéma OK — aucune action.")
+                }
             }
         } catch (e: Exception) {
-            println("[DataInitializer] ⚠ migratePlanConfigSchema échoué : ${e.message}")
+            println("[DataInitializer] ⚠ dropPlanConfigIfIncomplete échoué : ${e.message}")
         }
     }
 
