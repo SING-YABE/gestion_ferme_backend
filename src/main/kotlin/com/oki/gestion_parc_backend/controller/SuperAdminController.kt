@@ -156,20 +156,23 @@ class SuperAdminController(
     // ── Plans — CRUD ─────────────────────────────────────────────────────────
 
     @GetMapping("/plans")
-    @Transactional(readOnly = true)
     fun getAllPlans(): ResponseEntity<Any> {
+        // Pas de @Transactional ici — planConfigRepository.findAll() a sa propre transaction interne.
+        // Si findAll() échoue, l'exception remonte directement dans le catch (pas d'UnexpectedRollbackException).
         return try {
             val plans = planConfigRepository.findAll().sortedBy { it.ordre }
             println("[SuperAdmin] getAllPlans() → ${plans.size} plans trouvés")
             ResponseEntity.ok(plans)
         } catch (e: Exception) {
-            println("[SuperAdmin] ❌ getAllPlans() exception : ${e.javaClass.name} — ${e.message}")
+            println("[SuperAdmin] ❌ getAllPlans() ERREUR RÉELLE : ${e.javaClass.name} — ${e.message}")
+            e.cause?.let { println("[SuperAdmin]    cause : ${it.javaClass.name} — ${it.message}") }
             e.printStackTrace()
             ResponseEntity.status(500).body(
                 mapOf(
                     "error"  to "Erreur lors du chargement des plans",
-                    "detail" to e.message,
-                    "cause"  to e.cause?.message,
+                    "detail" to (e.message ?: "null"),
+                    "cause"  to (e.cause?.message ?: e.cause?.javaClass?.name),
+                    "rootCause" to generateSequence(e.cause) { it.cause }.lastOrNull()?.message,
                     "type"   to e.javaClass.name
                 )
             )
