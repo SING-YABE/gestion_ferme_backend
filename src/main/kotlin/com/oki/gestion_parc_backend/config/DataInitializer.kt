@@ -89,7 +89,7 @@ class DataInitializer(
             val now = LocalDateTime.now()
             planConfigRepository.saveAll(listOf(
                 PlanConfig(
-                    nom = "STARTER", description = "Démarrage gratuit — idéal pour découvrir la plateforme.",
+                    nom = "STARTER", description = "Démarrage gratuit idéal pour découvrir la plateforme.",
                     prixFcfa = 0, dureeDays = 14, trialDays = 14,
                     maxAnimaux = 10, maxUtilisateurs = 2, maxBatiments = 1,
                     hasAssistantIA = false, hasAlertesSms = false,
@@ -97,7 +97,7 @@ class DataInitializer(
                     actif = true, ordre = 0, createdAt = now, updatedAt = now
                 ),
                 PlanConfig(
-                    nom = "ELEVEUR PRO", description = "Pour les éleveurs en croissance — assistant IA inclus.",
+                    nom = "ELEVEUR PRO", description = "Pour les éleveurs en croissance  assistant IA inclus.",
                     prixFcfa = 5000, dureeDays = 30, trialDays = 0,
                     maxAnimaux = 50, maxUtilisateurs = 5, maxBatiments = 5,
                     hasAssistantIA = true, hasAlertesSms = false,
@@ -113,7 +113,7 @@ class DataInitializer(
                     actif = true, ordre = 2, createdAt = now, updatedAt = now
                 ),
                 PlanConfig(
-                    nom = "ENTREPRISE", description = "Illimité — pour les grandes exploitations porcines.",
+                    nom = "ENTREPRISE", description = "Illimité pour les grandes exploitations porcines.",
                     prixFcfa = 45000, dureeDays = 365, trialDays = 0,
                     maxAnimaux = -1, maxUtilisateurs = -1, maxBatiments = -1,
                     hasAssistantIA = true, hasAlertesSms = true,
